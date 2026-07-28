@@ -1379,14 +1379,13 @@ function playBattleAnimation(isWin) {
       ko.classList.add("show");
     }, 700);
     
-    // 鼓励文字
+    // 鼓励文字和语音 (800ms，单词刚读完)
     setTimeout(() => {
       const msg = randomPick(ENCOURAGE_CORRECT);
       bubble.textContent = msg;
       bubble.classList.add("show");
-      // 女声读鼓励语
-      speak(msg.replace(/[🌟⚡💪🏆🔥✨🎯👊🏃👑🦸💫🌈]/g,''), 0.78);
-    }, 500);
+      speak(msg.replace(/[🌟⚡💪🏆🔥✨🎯👊🏃👑🦸💫🌈]/g,''), 0.75);
+    }, 800);
     
   } else {
     // 怪兽攻击超人
@@ -1402,13 +1401,13 @@ function playBattleAnimation(isWin) {
       impact.classList.add("show");
     }, 550);
     
-    // 鼓励文字
+    // 鼓励文字和语音 (800ms)
     setTimeout(() => {
       const msg = randomPick(ENCOURAGE_WRONG);
       bubble.textContent = msg;
       bubble.classList.add("show");
-      speak(msg.replace(/[🌟⚡💪🏆🔥✨🎯👊🏃👑🦸💫🌈]/g,''), 0.78);
-    }, 500);
+      speak(msg.replace(/[🌟⚡💪🏆🔥✨🎯👊🏃👑🦸💫🌈]/g,''), 0.75);
+    }, 800);
   }
   
   // 清理
@@ -1446,7 +1445,7 @@ function choose(btn, opt, word){
     const rect = btn.getBoundingClientRect();
     burst(rect.left+rect.width/2, rect.top+rect.height/2, ULTRA_COLORS, 40);
     
-    // 超人vs怪兽对战动画
+    // 超人vs怪兽对战动画 (鼓励语在动画内部播放)
     playBattleAnimation(true);
     
     if(round.combo>=2 && !round.retry){
@@ -1457,11 +1456,12 @@ function choose(btn, opt, word){
       if(round.combo>=3){ $("beamFx").classList.add("on"); sfx.beam();
         setTimeout(()=>$("beamFx").classList.remove("on"), 600); }
     }
-    // 显示答案
+    // 显示答案 — 答案语音延迟到鼓励语之后
     $("answerLine").innerHTML = `✅ <span class="listen">${word.a} 🔊</span>`;
     $("answerLine").querySelector(".listen").onclick = ()=> speak(word.a);
-    setTimeout(()=> speak(word.a), 900);
-    setTimeout(()=>{ locking=false; round.retry=false; round.idx++; nextQuestion(); }, 3000);
+    // 答案朗读延迟到2.5s后（等鼓励语读完）
+    setTimeout(()=> speak(word.a), 2500);
+    setTimeout(()=>{ locking=false; round.retry=false; round.idx++; nextQuestion(); }, 3500);
   } else {
     btn.classList.add("wrong");
     setTimeout(()=>btn.classList.add("dim"), 400);
