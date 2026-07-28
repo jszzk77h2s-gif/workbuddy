@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>⚡ 奥特曼英语大闯关 · Ultraman English Quest · Fast Load</title>
+<style>
+/* ============ 奥特曼英语大闯关 —— 精致版 ============ */
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body { height:100%; overflow:hidden; }
+body {
+  font-family: "PingFang SC","Microsoft YaHei",-apple-system,sans-serif;
+  background: linear-gradient(180deg, #0a0a1e 0%, #1a1040 30%, #0d1b3e 60%, #0a0a1e 100%);
+  color:#fff; position:relative; user-select:none;
+}
+
+/* ===== 星空背景 ===== */
+#stars { position:fixed; inset:0; pointer-events:none; z-index:0; }
+.star { position:absolute; border-radius:50%; animation: twinkle 2.6s ease-in-out infinite; }
+.star.w { background:#fff; box-shadow:0 0 6px rgba(255,255,255,.8); }
+.star.b { background:#00E5FF; box-shadow:0 0 8px rgba(0,229,255,.9); }
+.star.g { background:#FFD700; box-shadow:0 0 6px rgba(255,215,0,.8); }
+.star.r { background:#E50012; box-shadow:0 0 6px rgba(229,0,18,.8); }
+@keyframes twinkle { 0%,100%{opacity:.2;transform:scale(1)} 50%{opacity:1;transform:scale(1.8)} }
+
+/* ===== 屏幕切换 ===== */
+.screen { position:fixed; inset:0; display:none; flex-direction:column; align-items:center;
+  padding: max(16px, env(safe-area-inset-top)) 16px 20px; z-index:2; overflow-y:auto; }
+.screen.active { display:flex; animation: pop-in .35s ease; }
+@keyframes pop-in { from{opacity:0; transform:scale(.96)} to{opacity:1; transform:scale(1)} }
+
+/* ===== 奥特曼角色 SVG ===== */
+.ultra-hero { position:relative; width:140px; height:160px; margin:8px auto 4px; animation: float 3s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+.ultra-hero svg { width:100%; height:100%; filter:drop-shadow(0 0 20px rgba(0,229,255,.6)); }
+.ultra-hero.small { animation:none; transform:scale(.55); margin:0 auto; }
+
+/* ===== 首页 ===== */
+.hero { text-align:center; }
+.game-title { font-size:32px; line-height:1.3; font-weight:900;
+  background: linear-gradient(135deg, #E50012 20%, #FFD700 50%, #E50012 80%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  filter:drop-shadow(0 0 15px rgba(229,0,18,.5)); letter-spacing:2px; }
+.game-title span { font-size:22px; }
+.subtitle { margin-top:4px; color:#00E5FF; font-size:13px; letter-spacing:3px; opacity:.85; }
+.home-stats { display:flex; gap:12px; margin:18px 0 6px; }
+.hs-item { background:rgba(0,229,255,.08); border:2px solid rgba(0,229,255,.35); border-radius:999px;
+  padding:8px 16px; font-size:14px; color:#a8d8ff; }
+.hs-item b { color:#00E5FF; font-size:17px; }
+
+.big-btn {
+  display:block; width:min(300px,84vw); margin:12px auto 0; padding:15px 0;
+  font-size:20px; font-weight:800; color:#fff; border:none; border-radius:999px;
+  cursor:pointer; letter-spacing:2px; position:relative;
+  transition: transform .12s ease, box-shadow .2s;
+}
+.big-btn:active { transform:scale(.95); }
+.btn-start {
+  background:linear-gradient(180deg,#ff4444,#c8102e);
+  box-shadow:0 5px 0 #7a0a1e, 0 0 25px rgba(229,0,18,.5), 0 8px 20px rgba(0,0,0,.4);
+  animation: pulse-start 2.2s ease-in-out infinite;
+}
+@keyframes pulse-start {
+  0%,100%{box-shadow:0 5px 0 #7a0a1e, 0 0 25px rgba(229,0,18,.5)}
+  50%{box-shadow:0 5px 0 #7a0a1e, 0 0 45px rgba(229,0,18,.85), 0 0 70px rgba(0,229,255,.3)}
+}
+.btn-review {
+  background:linear-gradient(180deg,#7B2FFF,#5a1fc0);
+  box-shadow:0 5px 0 #3a1080, 0 0 20px rgba(123,47,255,.4), 0 8px 20px rgba(0,0,0,.4);
+}
+.review-badge {
+  position:absolute; top:-8px; right:12px; min-width:26px; height:26px; padding:0 7px;
+  background:#FFD700; color:#1a1a2e; border-radius:999px; font-size:13px; line-height:26px;
+  display:none; font-weight:900;
+}
+.text-btn { margin-top:14px; background:none; border:none; color:#7fa8d0; font-size:15px; cursor:pointer; padding:8px; }
+.credit { margin-top:auto; padding-top:14px; font-size:11px; color:rgba(255,255,255,.4); }
+
+/* ===== 关卡选择 ===== */
+.screen-title { font-size:22px; margin:8px 0 14px; color:#00E5FF; text-shadow:0 0 15px rgba(0,229,255,.5); }
+.planet-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; width:min(400px,92vw); }
+.planet-card {
+  background:rgba(10,10,40,.7); border:2px solid rgba(0,229,255,.25);
+  border-radius:20px; padding:16px 8px 12px; text-align:center; cursor:pointer;
+  transition: transform .15s ease, box-shadow .15s ease, border-color .15s;
+  backdrop-filter:blur(4px);
+}
+.planet-card:active { transform:scale(.94); }
+.planet-card:hover, .planet-card:active { border-color:rgba(0,229,255,.6); box-shadow:0 0 20px rgba(0,229,255,.15); }
+.planet-icon { font-size:40px; display:block;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.4)); animation: float 3.4s ease-in-out infinite; }
+.planet-name { font-size:16px; font-weight:800; margin-top:6px; }
+.planet-count { font-size:10px; color:rgba(168,216,255,.6); margin-top:3px; }
+.planet-stars { margin-top:6px; font-size:12px; color:#FFD700; letter-spacing:2px; }
+
+/* ===== 游戏页 ===== */
+.hud { display:flex; align-items:center; gap:10px; width:min(500px,94vw); margin-bottom:8px; }
+.hud-btn { width:36px; height:36px; border-radius:50%; border:none; background:rgba(255,255,255,.15); color:#fff; font-size:16px; cursor:pointer; flex:none; }
+.hud-progress { flex:1; height:14px; background:rgba(0,0,0,.4); border-radius:999px; overflow:hidden; border:2px solid rgba(0,229,255,.4); }
+.hud-bar { height:100%; width:0%; border-radius:999px;
+  background:linear-gradient(90deg,#00E5FF,#7B2FFF); transition:width .4s ease;
+  box-shadow:0 0 10px rgba(0,229,255,.7); }
+.hud-energy { font-size:15px; font-weight:800; color:#00E5FF; flex:none; }
+
+.combo-tip { height:24px; font-size:15px; font-weight:900; color:#FFD700;
+  text-shadow:0 0 12px rgba(255,215,0,.8); opacity:0; transition:opacity .2s; text-align:center; }
+.combo-tip.show { opacity:1; animation: combo-pop .45s ease; }
+@keyframes combo-pop { 0%{transform:scale(.5)} 60%{transform:scale(1.25)} 100%{transform:scale(1)} }
+
+.quiz-card {
+  width:min(500px,94vw); background:rgba(15,15,50,.95); color:#e0e8f0;
+  border-radius:24px; padding:16px 14px 18px; position:relative;
+  box-shadow:0 12px 36px rgba(0,0,0,.5), inset 0 0 0 2px rgba(0,229,255,.15);
+  border:1px solid rgba(0,229,255,.2);
+}
+.quiz-question { font-size:18px; font-weight:700; text-align:center; padding:0 36px; color:#e8f0ff; line-height:1.4; }
+.quiz-word-badge { display:inline-block; background:linear-gradient(135deg,#E50012,#ff4444); color:#fff;
+  padding:4px 16px; border-radius:20px; font-size:15px; font-weight:900; margin:8px 0; letter-spacing:1px; }
+.speak-btn {
+  position:absolute; top:10px; right:10px; width:40px; height:40px; border-radius:50%;
+  border:none; background:linear-gradient(180deg,#00E5FF,#0066CC); color:#fff; font-size:18px;
+  cursor:pointer; box-shadow:0 3px 0 #004499, 0 0 15px rgba(0,229,255,.4);
+  transition:transform .12s;
+}
+.speak-btn:active { transform:scale(.9); }
+.speak-btn.speaking { animation:speak-glow .6s ease-in-out infinite; }
+@keyframes speak-glow { 0%,100%{box-shadow:0 3px 0 #004499,0 0 15px rgba(0,229,255,.4)} 50%{box-shadow:0 3px 0 #004499,0 0 30px rgba(0,229,255,.9)} }
+
+.quiz-image {
+  margin:10px auto 4px; width:min(280px,68vw); height:min(210px,42vw);
+  display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(180deg,rgba(0,229,255,.05),rgba(123,47,255,.05)); border-radius:16px;
+  border:2px solid rgba(0,229,255,.2); overflow:hidden;
+}
+.quiz-image img { width:100%; height:100%; object-fit:contain; }
+.quiz-image .fallback-emoji { font-size:min(100px,22vw); line-height:1;
+  filter:drop-shadow(0 6px 12px rgba(0,229,255,.3)); animation: float 3s ease-in-out infinite; }
+
+.options { display:flex; flex-direction:column; gap:9px; margin-top:12px; }
+.opt-btn {
+  position:relative; padding:13px 14px; font-size:17px; font-weight:700; text-align:center;
+  border-radius:14px; border:2px solid rgba(0,229,255,.25); background:rgba(0,229,255,.06); color:#d0e0ff;
+  cursor:pointer; transition: transform .12s ease, background .15s, border-color .15s;
+}
+.opt-btn:active { transform:scale(.97); }
+.opt-btn .opt-tag { position:absolute; left:10px; top:50%; transform:translateY(-50%);
+  width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,#E50012,#ff4444); color:#fff;
+  font-size:13px; line-height:26px; font-weight:900; }
+.opt-btn.correct { background:rgba(0,255,136,.15); border-color:#00FF88; color:#00FF88; animation: opt-win .5s ease; }
+.opt-btn.correct .opt-tag { background:#00FF88; color:#1a2e1a; }
+.opt-btn.wrong { background:rgba(229,0,18,.15); border-color:#E50012; color:#ff6666; animation: shake .4s ease; }
+.opt-btn.wrong .opt-tag { background:#E50012; }
+.opt-btn.dim { opacity:.4; pointer-events:none; }
+@keyframes opt-win { 0%{transform:scale(1)} 45%{transform:scale(1.05)} 100%{transform:scale(1)} }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 50%{transform:translateX(6px)} 75%{transform:translateX(-3px)} }
+
+.answer-line { min-height:28px; margin-top:10px; text-align:center; font-size:15px; font-weight:700; color:#00E5FF; }
+.answer-line .listen { cursor:pointer; text-decoration:underline dotted; }
+
+/* 斯佩修姆光线特效 */
+.beam-fx { position:fixed; left:0; right:0; top:0; bottom:0; pointer-events:none; z-index:8; display:none; }
+.beam-fx.on { display:block; }
+.beam-fx::before {
+  content:""; position:absolute; left:-20%; top:42%; width:140%; height:14px;
+  background:linear-gradient(90deg,transparent,#00E5FF,#fff,#00E5FF,transparent);
+  box-shadow:0 0 40px #00E5FF, 0 0 100px #0066FF, 0 0 160px rgba(0,229,255,.5);
+  animation: beam-shoot .55s ease-out forwards;
+}
+@keyframes beam-shoot { from{transform:scaleX(0); opacity:0} 25%{opacity:1} to{transform:scaleX(1); opacity:0} }
+
+/* ===== 结算页 ===== */
+.result-card {
+  width:min(400px,90vw); margin:auto; background:rgba(10,10,40,.85);
+  border:2px solid rgba(0,229,255,.3); border-radius:26px; padding:24px 18px; text-align:center;
+  backdrop-filter: blur(8px); box-shadow:0 0 40px rgba(0,229,255,.1);
+}
+.result-card h2 { font-size:28px; margin:8px 0 4px; color:#FFD700; text-shadow:0 0 15px rgba(255,215,0,.5); }
+.result-stars { font-size:36px; letter-spacing:6px; margin:4px 0; }
+.result-stars .off { opacity:.2; filter:grayscale(1); }
+.result-stats { display:flex; justify-content:center; gap:20px; margin:8px 0; font-size:15px; }
+.result-stats b { color:#00E5FF; font-size:19px; }
+.result-msg { font-size:13px; color:#a8d8ff; margin:4px 0 8px; line-height:1.5; }
+
+#fxCanvas { position:fixed; inset:0; pointer-events:none; z-index:9; }
+
+@media (min-width:700px){
+  .game-title{ font-size:40px; }
+  .planet-grid{ grid-template-columns:repeat(4,1fr); width:min(740px,94vw); }
+}
+</style>
+</head>
+<body>
+<div id="stars"></div>
+
+<!-- ========== 首页 ========== -->
+<div id="screen-home" class="screen active">
+  <div class="hero">
+    <div class="ultra-hero" id="ultraHead">
+      <svg viewBox="0 0 160 180" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="bodyGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#E50012"/><stop offset="50%" stop-color="#FF3333"/><stop offset="100%" stop-color="#C8102E"/>
+          </linearGradient>
+          <linearGradient id="silverGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#FFFFFF"/><stop offset="100%" stop-color="#B0B8C8"/>
+          </linearGradient>
+          <filter id="glow"><feGaussianBlur stdDeviation="2.5"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <ellipse cx="80" cy="50" rx="32" ry="36" fill="url(#silverGrad)" filter="url(#glow)"/>
+        <ellipse cx="67" cy="43" rx="11" ry="7" fill="#FFE800" opacity="0.95"/>
+        <ellipse cx="93" cy="43" rx="11" ry="7" fill="#FFE800" opacity="0.95"/>
+        <circle cx="67" cy="43" r="2.5" fill="#1a1a2e"/>
+        <circle cx="93" cy="43" r="2.5" fill="#1a1a2e"/>
+        <polygon points="80,12 72,32 88,32" fill="#E50012"/>
+        <rect x="50" y="82" width="60" height="68" rx="8" fill="url(#bodyGrad)"/>
+        <rect x="50" y="102" width="60" height="7" fill="url(#silverGrad)"/>
+        <circle cx="80" cy="112" r="9" fill="#00E5FF" opacity="0.85">
+          <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite"/>
+        </circle>
+        <rect x="15" y="86" width="36" height="18" rx="9" fill="url(#bodyGrad)"/>
+        <rect x="109" y="86" width="36" height="18" rx="9" fill="url(#bodyGrad)"/>
+        <rect x="56" y="148" width="22" height="28" rx="5" fill="url(#bodyGrad)"/>
+        <rect x="82" y="148" width="22" height="28" rx="5" fill="url(#bodyGrad)"/>
+        <circle cx="51" cy="95" r="11" fill="url(#silverGrad)"/>
+        <circle cx="109" cy="95" r="11" fill="url(#silverGrad)"/>
+      </svg>
+    </div>
+    <h1 class="game-title">奥特曼<br><span>英语闯关大冒险</span></h1>
+    <p class="subtitle">⚡ Ultraman English Quest · Fast Load ⚡</p>
+  </div>
+  <div class="home-stats">
+    <div class="hs-item">⚡ 光之能量 <b id="homeEnergy">0</b></div>
+    <div class="hs-item">🏅 勋章 <b id="homeMedals">0</b></div>
+  </div>
+  <button class="big-btn btn-start" id="btnStart">🚀 出发闯关</button>
+  <button class="big-btn btn-review" id="btnReview">🔁 复习弱项 <span class="review-badge" id="reviewBadge"></span></button>
+  <p class="credit">题库来源：博博长春藤 · 水波儿读书笔记</p>
+</div>
+
+<!-- ========== 选关卡 ========== -->
+<div id="screen-planets" class="screen">
+  <h2 class="screen-title">🌌 选择你的关卡</h2>
+  <div class="planet-grid" id="planetGrid"></div>
+  <button class="text-btn" id="btnBackHome">← 返回基地</button>
+</div>
+
+<!-- ========== 游戏页 ========== -->
+<div id="screen-game" class="screen">
+  <div class="hud">
+    <button class="hud-btn" id="btnQuit">✕</button>
+    <div class="hud-progress"><div class="hud-bar" id="hudBar"></div></div>
+    <div class="hud-energy">⚡<span id="hudEnergy">0</span></div>
+  </div>
+  <div class="combo-tip" id="comboTip"></div>
+  <div class="quiz-card" id="quizCard">
+    <div class="quiz-word-badge" id="quizWordBadge"></div>
+    <div class="quiz-question" id="quizQuestion">What is this?</div>
+    <button class="speak-btn" id="btnSpeakQ" title="听发音">🔊</button>
+    <div class="quiz-image" id="quizImage"></div>
+    <div class="options" id="options"></div>
+    <div class="answer-line" id="answerLine"></div>
+  </div>
+  <div class="beam-fx" id="beamFx"></div>
+</div>
+
+<!-- ========== 结算页 ========== -->
+<div id="screen-result" class="screen">
+  <div class="result-card">
+    <div class="ultra-hero small">
+      <svg viewBox="0 0 160 180" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="bodyGrad2" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#E50012"/><stop offset="50%" stop-color="#FF3333"/><stop offset="100%" stop-color="#C8102E"/>
+          </linearGradient>
+          <linearGradient id="silverGrad2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#FFFFFF"/><stop offset="100%" stop-color="#B0B8C8"/>
+          </linearGradient>
+        </defs>
+        <ellipse cx="80" cy="50" rx="32" ry="36" fill="url(#silverGrad2)"/>
+        <ellipse cx="67" cy="43" rx="11" ry="7" fill="#FFE800" opacity="0.95"/>
+        <ellipse cx="93" cy="43" rx="11" ry="7" fill="#FFE800" opacity="0.95"/>
+        <circle cx="67" cy="43" r="2.5" fill="#1a1a2e"/><circle cx="93" cy="43" r="2.5" fill="#1a1a2e"/>
+        <polygon points="80,12 72,32 88,32" fill="#E50012"/>
+        <rect x="50" y="82" width="60" height="68" rx="8" fill="url(#bodyGrad2)"/>
+        <rect x="50" y="102" width="60" height="7" fill="url(#silverGrad2)"/>
+        <circle cx="80" cy="112" r="9" fill="#00E5FF" opacity="0.85"/>
+        <rect x="15" y="86" width="36" height="18" rx="9" fill="url(#bodyGrad2)"/>
+        <rect x="109" y="86" width="36" height="18" rx="9" fill="url(#bodyGrad2)"/>
+        <rect x="56" y="148" width="22" height="28" rx="5" fill="url(#bodyGrad2)"/>
+        <rect x="82" y="148" width="22" height="28" rx="5" fill="url(#bodyGrad2)"/>
+        <circle cx="51" cy="95" r="11" fill="url(#silverGrad2)"/>
+        <circle cx="109" cy="95" r="11" fill="url(#silverGrad2)"/>
+      </svg>
+    </div>
+    <h2 id="resultTitle">胜利！</h2>
+    <div class="result-stars" id="resultStars"></div>
+    <div class="result-stats">
+      <div>✅ 答对 <b id="rsCorrect">0</b></div>
+      <div>⚡ 获得能量 <b id="rsEnergy">0</b></div>
+    </div>
+    <p class="result-msg" id="resultMsg"></p>
+    <button class="big-btn btn-start" id="btnNext">继续出征 →</button>
+    <button class="text-btn" id="btnResultHome">回到基地</button>
+  </div>
+</div>
+
+<canvas id="fxCanvas"></canvas>
+
+<script>
+// ============================================================
+// 图片缓存 (Base64)
+// ============================================================
+const IMG_CACHE = {}; // Images loaded from external files for fast loading
+
+
+// ============================================================
+// 题库数据 —— 来源：ima知识库「博博长春藤」17个PDF完整题库
+// ============================================================
+const WORD_BANK = [
+  // ---------------- 服装 (20) ----------------
+  { id:'belt', word:'belt', theme:'clothes', emoji:'🎗️', img:'clothes_belt.png', q:'What is this?', a:'This is a belt.', say:'belt' },
+  { id:'boots', word:'boots', theme:'clothes', emoji:'🥾', img:'clothes_boots.png', q:'What are these?', a:'These are boots.', say:'boots' },
+  { id:'cap', word:'cap', theme:'clothes', emoji:'🧢', img:'clothes_cap.png', q:'What is this?', a:'This is a cap.', say:'cap' },
+  { id:'coat', word:'coat', theme:'clothes', emoji:'🧥', img:'clothes_coat.png', q:'What is this?', a:'This is a coat.', say:'coat' },
+  { id:'gloves', word:'gloves', theme:'clothes', emoji:'🧤', img:'clothes_gloves.png', q:'What are these?', a:'These are gloves.', say:'gloves' },
+  { id:'handbag', word:'handbag', theme:'clothes', emoji:'👜', img:'clothes_handbag.png', q:'What is this?', a:'This is a handbag.', say:'handbag' },
+  { id:'hat', word:'hat', theme:'clothes', emoji:'👒', img:'clothes_hat.png', q:'What is this?', a:'This is a hat.', say:'hat' },
+  { id:'jacket', word:'jacket', theme:'clothes', emoji:'🧷', img:'clothes_jacket.png', q:'What is this?', a:'This is a jacket.', say:'jacket' },
+  { id:'jeans', word:'jeans', theme:'clothes', emoji:'👖', img:'clothes_jeans.png', q:'What are these?', a:'These are jeans.', say:'jeans' },
+  { id:'ring', word:'ring', theme:'clothes', emoji:'💍', img:'clothes_ring.png', q:'What is this?', a:'This is a ring.', say:'ring' },
+  { id:'sandals', word:'sandals', theme:'clothes', emoji:'👡', img:'clothes_sandals.png', q:'What are these?', a:'These are sandals.', say:'sandals' },
+  { id:'scarf', word:'scarf', theme:'clothes', emoji:'🧣', img:'clothes_scarf.png', q:'What is this?', a:'This is a scarf.', say:'scarf' },
+  { id:'shoes', word:'shoes', theme:'clothes', emoji:'👟', img:'clothes_shoes.png', q:'What are these?', a:'These are shoes.', say:'shoes' },
+  { id:'shorts', word:'shorts', theme:'clothes', emoji:'🩳', img:'clothes_shorts.png', q:'What are these?', a:'These are shorts.', say:'shorts' },
+  { id:'skirt', word:'skirt', theme:'clothes', emoji:'👗', img:'clothes_skirt.png', q:'What is the girl wearing?', a:'She is wearing a T-shirt and a skirt.', say:'skirt' },
+  { id:'slippers', word:'slippers', theme:'clothes', emoji:'🩴', img:'clothes_slippers.png', q:'What are these?', a:'These are slippers.', say:'slippers' },
+  { id:'socks', word:'socks', theme:'clothes', emoji:'🧦', img:'clothes_socks.png', q:'What are these?', a:'These are socks.', say:'socks' },
+  { id:'sweater', word:'sweater', theme:'clothes', emoji:'🧶', img:'clothes_sweater.png', q:'What is the woman wearing?', a:'She is wearing a sweater and jeans.', say:'sweater' },
+  { id:'swimsuit', word:'swimsuit', theme:'clothes', emoji:'🩱', img:'clothes_swimsuit.png', q:'What is the girl wearing?', a:'She is wearing a swimsuit and a pair of sunglasses.', say:'swimsuit' },
+  { id:'tshirt', word:'T-shirt', theme:'clothes', emoji:'👕', img:'clothes_tshirt.png', q:'What is the woman wearing?', a:'She is wearing a black T-shirt and blue jeans.', say:'T-shirt' },
+
+  // ---------------- 日常 (15) ----------------
+  { id:'brush_teeth', word:'brush my teeth', theme:'routine', emoji:'🪥', img:'routine_brush_teeth.png', q:'What is the girl doing?', a:'She is brushing her teeth.', say:'brush my teeth' },
+  { id:'clean_room', word:'clean my room', theme:'routine', emoji:'🧹', img:'routine_clean_room.png', q:'What is the boy doing?', a:'He is cleaning his room.', say:'clean my room' },
+  { id:'comb_hair', word:'comb my hair', theme:'routine', emoji:'💇', img:'routine_comb_hair.png', q:'What is the woman doing?', a:'She is combing her hair.', say:'comb my hair' },
+  { id:'come_home', word:'come home', theme:'routine', emoji:'🏠', img:'routine_come_home.png', q:'What is happening?', a:'The woman comes home, and the children are hugging her.', say:'come home' },
+  { id:'do_homework', word:'do homework', theme:'routine', emoji:'📝', img:'routine_do_homework.png', q:'What is the boy doing?', a:'He is doing his homework.', say:'do homework' },
+  { id:'get_dressed', word:'get dressed', theme:'routine', emoji:'👔', img:'routine_get_dressed.png', q:'What is the boy doing?', a:'He is getting dressed.', say:'get dressed' },
+  { id:'get_up', word:'get up', theme:'routine', emoji:'⏰', img:'routine_get_up.png', q:'What is the boy doing?', a:'He is getting up.', say:'get up' },
+  { id:'go_to_bed', word:'go to bed', theme:'routine', emoji:'🛌', img:'routine_go_to_bed.png', q:'What is the girl doing?', a:'She is sleeping in bed.', say:'go to bed' },
+  { id:'go_to_school', word:'go to school', theme:'routine', emoji:'🎒', img:'routine_go_to_school.png', q:'What are the children doing?', a:'They are going to school.', say:'go to school' },
+  { id:'have_breakfast', word:'have breakfast', theme:'routine', emoji:'🥞', img:'routine_have_breakfast.png', q:'What is the boy doing?', a:'He is having breakfast.', say:'have breakfast' },
+  { id:'have_dinner', word:'have dinner', theme:'routine', emoji:'🍽️', img:'routine_have_dinner.png', q:'What are they doing?', a:'They are having dinner.', say:'have dinner' },
+  { id:'have_lunch', word:'have lunch', theme:'routine', emoji:'🥗', img:'routine_have_lunch.png', q:'What are the children doing?', a:'They are having lunch.', say:'have lunch' },
+  { id:'read_books', word:'read books', theme:'routine', emoji:'📚', img:'routine_read_books.png', q:'What is the boy doing?', a:'He is reading a book.', say:'read books' },
+  { id:'take_shower', word:'take a shower', theme:'routine', emoji:'🚿', img:'routine_take_shower.png', q:'What is the boy doing?', a:'He is taking a shower.', say:'take a shower' },
+  { id:'wash_face', word:'wash my face', theme:'routine', emoji:'🧼', img:'routine_wash_face.png', q:'What is the man doing?', a:'He is washing his face.', say:'wash my face' },
+
+  // ---------------- 心情 (15) ----------------
+  { id:'angry', word:'angry', theme:'feelings', emoji:'😠', img:'feelings_angry.png', q:'How does the girl feel?', a:'She feels very angry.', say:'angry' },
+  { id:'bored', word:'bored', theme:'feelings', emoji:'😐', img:'feelings_bored.png', q:'How does the boy feel?', a:'He feels bored.', say:'bored' },
+  { id:'confused', word:'confused', theme:'feelings', emoji:'😕', img:'feelings_confused.png', q:'How does the boy feel?', a:'He feels confused.', say:'confused' },
+  { id:'excited', word:'excited', theme:'feelings', emoji:'🤩', img:'feelings_excited.png', q:'How does the boy feel?', a:'He feels excited.', say:'excited' },
+  { id:'happy', word:'happy', theme:'feelings', emoji:'😄', img:'feelings_happy.png', q:'How does the girl feel?', a:'She feels happy.', say:'happy' },
+  { id:'hot', word:'hot', theme:'feelings', emoji:'🥵', img:'feelings_hot.png', q:'How does the girl feel?', a:'She feels very hot.', say:'hot' },
+  { id:'hungry', word:'hungry', theme:'feelings', emoji:'🍽️', img:'feelings_hungry.png', q:'How does the boy feel?', a:'He feels hungry.', say:'hungry' },
+  { id:'proud', word:'proud', theme:'feelings', emoji:'😎', img:'feelings_proud.png', q:'How does the boy feel?', a:'He feels proud.', say:'proud' },
+  { id:'sad', word:'sad', theme:'feelings', emoji:'😢', img:'feelings_sad.png', q:'How does the boy feel?', a:'He feels sad.', say:'sad' },
+  { id:'scared', word:'scared', theme:'feelings', emoji:'😱', img:'feelings_scared.png', q:'How does the girl feel?', a:'She feels scared.', say:'scared' },
+  { id:'shy', word:'shy', theme:'feelings', emoji:'😳', img:'feelings_shy.png', q:'How does the girl feel?', a:'She feels shy.', say:'shy' },
+  { id:'sick', word:'sick', theme:'feelings', emoji:'🤒', img:'feelings_sick.png', q:'How does the boy feel?', a:'He feels sick.', say:'sick' },
+  { id:'surprised', word:'surprised', theme:'feelings', emoji:'😮', img:'feelings_surprised.png', q:'How does the girl feel?', a:'She feels surprised.', say:'surprised' },
+  { id:'tired', word:'tired', theme:'feelings', emoji:'😴', img:'feelings_tired.png', q:'How does the girl feel?', a:'She feels tired.', say:'tired' },
+  { id:'worried', word:'worried', theme:'feelings', emoji:'😟', img:'feelings_worried.png', q:'How does the boy feel?', a:'He feels worried.', say:'worried' },
+
+  // ---------------- 动物 (42) ----------------
+  { id:'ant', word:'ant', theme:'animals', emoji:'🐜', img:'animals_ant.png', q:'What can you see in the picture?', a:'I can see an ant.', say:'ant' },
+  { id:'bee', word:'bee', theme:'animals', emoji:'🐝', img:'animals_bee.png', q:'What can you see in the picture?', a:'I can see a bee.', say:'bee' },
+  { id:'bird', word:'bird', theme:'animals', emoji:'🐦', img:'animals_bird.png', q:'What can you see in the picture?', a:'I can see a bird.', say:'bird' },
+  { id:'butterfly', word:'butterfly', theme:'animals', emoji:'🦋', img:'animals_butterfly.png', q:'What can you see in the picture?', a:'I can see a butterfly.', say:'butterfly' },
+  { id:'camel', word:'camel', theme:'animals', emoji:'🐪', img:'animals_camel.png', q:'What can you see in the picture?', a:'I can see a camel.', say:'camel' },
+  { id:'cat', word:'cat', theme:'animals', emoji:'🐱', img:'animals_cat.png', q:'What can you see in the picture?', a:'I can see a cat.', say:'cat' },
+  { id:'chicken', word:'chicken', theme:'animals', emoji:'🐔', img:'animals_chicken.png', q:'What can you see in the picture?', a:'I can see a chicken.', say:'chicken' },
+  { id:'cow', word:'cow', theme:'animals', emoji:'🐄', img:'animals_cow.png', q:'What can you see in the picture?', a:'I can see a cow.', say:'cow' },
+  { id:'crocodile', word:'crocodile', theme:'animals', emoji:'🐊', img:'animals_crocodile.png', q:'What can you see in the picture?', a:'I can see a crocodile.', say:'crocodile' },
+  { id:'deer', word:'deer', theme:'animals', emoji:'🦌', img:'animals_deer.png', q:'What can you see in the picture?', a:'I can see a deer.', say:'deer' },
+  { id:'dinosaur', word:'dinosaur', theme:'animals', emoji:'🦖', img:'animals_dinosaur.png', q:'What can you see in the picture?', a:'I can see a dinosaur.', say:'dinosaur' },
+  { id:'dog', word:'dog', theme:'animals', emoji:'🐶', img:'animals_dog.png', q:'What can you see in the picture?', a:'I can see a dog.', say:'dog' },
+  { id:'dolphin', word:'dolphin', theme:'animals', emoji:'🐬', img:'animals_dolphin.png', q:'What can you see in the picture?', a:'I can see a dolphin.', say:'dolphin' },
+  { id:'duck', word:'duck', theme:'animals', emoji:'🦆', img:'animals_duck.png', q:'What can you see in the picture?', a:'I can see a duck.', say:'duck' },
+  { id:'eagle', word:'eagle', theme:'animals', emoji:'🦅', img:'animals_eagle.png', q:'What can you see in the picture?', a:'I can see an eagle.', say:'eagle' },
+  { id:'elephant', word:'elephant', theme:'animals', emoji:'🐘', img:'animals_elephant.png', q:'What can you see in the picture?', a:'I can see an elephant.', say:'elephant' },
+  { id:'fish', word:'fish', theme:'animals', emoji:'🐟', img:'animals_fish.png', q:'What can you see in the picture?', a:'I can see a fish.', say:'fish' },
+  { id:'fox', word:'fox', theme:'animals', emoji:'🦊', img:'animals_fox.png', q:'What can you see in the picture?', a:'I can see a fox.', say:'fox' },
+  { id:'frog', word:'frog', theme:'animals', emoji:'🐸', img:'animals_frog.png', q:'What can you see in the picture?', a:'I can see a frog.', say:'frog' },
+  { id:'giraffe', word:'giraffe', theme:'animals', emoji:'🦒', img:'animals_giraffe.png', q:'What can you see in the picture?', a:'I can see a giraffe.', say:'giraffe' },
+  { id:'gorilla', word:'gorilla', theme:'animals', emoji:'🦍', img:'animals_gorilla.png', q:'What can you see in the picture?', a:'I can see a gorilla.', say:'gorilla' },
+  { id:'hen', word:'hen', theme:'animals', emoji:'🐓', img:'animals_hen.png', q:'What can you see in the picture?', a:'I can see a hen.', say:'hen' },
+  { id:'horse', word:'horse', theme:'animals', emoji:'🐴', img:'animals_horse.png', q:'What can you see in the picture?', a:'I can see a horse.', say:'horse' },
+  { id:'kangaroo', word:'kangaroo', theme:'animals', emoji:'🦘', img:'animals_kangaroo.png', q:'What can you see in the picture?', a:'I can see a kangaroo.', say:'kangaroo' },
+  { id:'lion', word:'lion', theme:'animals', emoji:'🦁', img:'animals_lion.png', q:'What can you see in the picture?', a:'I can see a lion.', say:'lion' },
+  { id:'monkey', word:'monkey', theme:'animals', emoji:'🐵', img:'animals_monkey.png', q:'What can you see in the picture?', a:'I can see a monkey.', say:'monkey' },
+  { id:'mouse', word:'mouse', theme:'animals', emoji:'🐭', img:'animals_mouse.png', q:'What can you see in the picture?', a:'I can see a mouse.', say:'mouse' },
+  { id:'octopus', word:'octopus', theme:'animals', emoji:'🐙', img:'animals_octopus.png', q:'What can you see in the picture?', a:'I can see an octopus.', say:'octopus' },
+  { id:'panda', word:'panda', theme:'animals', emoji:'🐼', img:'animals_panda.png', q:'What can you see in the picture?', a:'I can see a panda.', say:'panda' },
+  { id:'parrot', word:'parrot', theme:'animals', emoji:'🦜', img:'animals_parrot.png', q:'What can you see in the picture?', a:'I can see a parrot.', say:'parrot' },
+  { id:'penguin', word:'penguin', theme:'animals', emoji:'🐧', img:'animals_penguin.png', q:'What can you see in the picture?', a:'I can see a penguin.', say:'penguin' },
+  { id:'pig', word:'pig', theme:'animals', emoji:'🐷', img:'animals_pig.png', q:'What can you see in the picture?', a:'I can see a pig.', say:'pig' },
+  { id:'rabbit', word:'rabbit', theme:'animals', emoji:'🐰', img:'animals_rabbit.png', q:'What can you see in the picture?', a:'I can see a rabbit.', say:'rabbit' },
+  { id:'seal', word:'seal', theme:'animals', emoji:'🦭', img:'animals_seal.png', q:'What can you see in the picture?', a:'I can see a seal.', say:'seal' },
+  { id:'shark', word:'shark', theme:'animals', emoji:'🦈', img:'animals_shark.png', q:'What can you see in the picture?', a:'I can see a shark.', say:'shark' },
+  { id:'sheep', word:'sheep', theme:'animals', emoji:'🐑', img:'animals_sheep.png', q:'What can you see in the picture?', a:'I can see a sheep.', say:'sheep' },
+  { id:'snake', word:'snake', theme:'animals', emoji:'🐍', img:'animals_snake.png', q:'What can you see in the picture?', a:'I can see a snake.', say:'snake' },
+  { id:'spider', word:'spider', theme:'animals', emoji:'🕷️', img:'animals_spider.png', q:'What can you see in the picture?', a:'I can see a spider.', say:'spider' },
+  { id:'tiger', word:'tiger', theme:'animals', emoji:'🐯', img:'animals_tiger.png', q:'What can you see in the picture?', a:'I can see a tiger.', say:'tiger' },
+  { id:'tortoise', word:'tortoise', theme:'animals', emoji:'🐢', img:'animals_tortoise.png', q:'What can you see in the picture?', a:'I can see a tortoise.', say:'tortoise' },
+  { id:'whale', word:'whale', theme:'animals', emoji:'🐋', img:'animals_whale.png', q:'What can you see in the picture?', a:'I can see a whale.', say:'whale' },
+  { id:'zebra', word:'zebra', theme:'animals', emoji:'🦓', img:'animals_zebra.png', q:'What can you see in the picture?', a:'I can see a zebra.', say:'zebra' },
+
+  // ---------------- 形容词 (10) ----------------
+  { id:'big', word:'big', theme:'adjectives', emoji:'🐘', img:'adjectives_big.png', q:'What can you see in the picture?', a:'I can see a big rock balanced on smaller rocks.', say:'big' },
+  { id:'small', word:'small', theme:'adjectives', emoji:'🐭', img:'adjectives_small.png', q:'What can you see in the picture?', a:'I can see a small house.', say:'small' },
+  { id:'hot', word:'hot_adj', theme:'adjectives', emoji:'🔥', img:'adjectives_hot.png', q:'What can you see in the picture?', a:'I can see a hot desert.', say:'hot_adj' },
+  { id:'cold', word:'cold', theme:'adjectives', emoji:'❄️', img:'adjectives_cold.png', q:'What can you see in the picture?', a:'I can see a cold snowy mountain.', say:'cold' },
+  { id:'fast', word:'fast', theme:'adjectives', emoji:'🏃', img:'adjectives_fast.png', q:'What can you see in the picture?', a:'I can see a fast cheetah running.', say:'fast' },
+  { id:'slow', word:'slow', theme:'adjectives', emoji:'🐌', img:'adjectives_slow.png', q:'What can you see in the picture?', a:'I can see a slow turtle.', say:'slow' },
+  { id:'tall', word:'tall', theme:'adjectives', emoji:'🏢', img:'adjectives_tall.png', q:'What can you see in the picture?', a:'I can see a tall giraffe.', say:'tall' },
+  { id:'short', word:'short', theme:'adjectives', emoji:'📏', img:'adjectives_short.png', q:'What can you see in the picture?', a:'I can see a short pencil.', say:'short' },
+  { id:'young', word:'young', theme:'adjectives', emoji:'👶', img:'adjectives_young.png', q:'What can you see in the picture?', a:'I can see a young girl.', say:'young' },
+  { id:'old', word:'old_adj', theme:'adjectives', emoji:'👴', img:'adjectives_old.png', q:'What can you see in the picture?', a:'I can see an old man.', say:'old_adj' },
+
+  // ---------------- 颜色 (15) ----------------
+  { id:'black', word:'black', theme:'colors', emoji:'⬛', img:'colors_black.png', q:'What color is this?', a:'This is black.', say:'black' },
+  { id:'blue', word:'blue', theme:'colors', emoji:'🟦', img:'colors_blue.png', q:'What color is this?', a:'This is blue.', say:'blue' },
+  { id:'brown', word:'brown', theme:'colors', emoji:'🟫', img:'colors_brown.png', q:'What color is this?', a:'This is brown.', say:'brown' },
+  { id:'gold', word:'gold', theme:'colors', emoji:'🟨', img:'colors_gold.png', q:'What color is this?', a:'This is gold.', say:'gold' },
+  { id:'gray', word:'gray', theme:'colors', emoji:'🔲', img:'colors_gray.png', q:'What color is this?', a:'This is gray.', say:'gray' },
+  { id:'green', word:'green', theme:'colors', emoji:'🟩', img:'colors_green.png', q:'What color is this?', a:'This is green.', say:'green' },
+  { id:'orange', word:'orange_color', theme:'colors', emoji:'🟧', img:'colors_orange.png', q:'What color is this?', a:'This is orange.', say:'orange_color' },
+  { id:'pink', word:'pink', theme:'colors', emoji:'🩷', img:'colors_pink.png', q:'What color is this?', a:'This is pink.', say:'pink' },
+  { id:'purple', word:'purple', theme:'colors', emoji:'🟪', img:'colors_purple.png', q:'What color is this?', a:'This is purple.', say:'purple' },
+  { id:'red', word:'red', theme:'colors', emoji:'🟥', img:'colors_red.png', q:'What color is this?', a:'This is red.', say:'red' },
+  { id:'silver', word:'silver', theme:'colors', emoji:'🪩', img:'colors_silver.png', q:'What color is this?', a:'This is silver.', say:'silver' },
+  { id:'white', word:'white', theme:'colors', emoji:'⬜', img:'colors_white.png', q:'What color is this?', a:'This is white.', say:'white' },
+  { id:'yellow', word:'yellow_color', theme:'colors', emoji:'🟨', img:'colors_yellow.png', q:'What color is this?', a:'This is yellow.', say:'yellow_color' },
+  { id:'dark', word:'dark', theme:'colors', emoji:'🌑', img:'colors_dark.png', q:'What word describes a room with no light?', a:'It is dark.', say:'dark' },
+  { id:'light', word:'light_color', theme:'colors', emoji:'💡', img:'colors_light.png', q:'What is the opposite of dark?', a:'It is light.', say:'light_color' },
+
+  // ---------------- 家人 (18) ----------------
+  { id:'aunt', word:'aunt', theme:'family', emoji:'👩', img:'family_aunt.png', q:'What can you see in the picture?', a:'I can see an aunt holding a baby.', say:'aunt' },
+  { id:'baby', word:'baby', theme:'family', emoji:'👶', img:'family_baby.png', q:'What can you see in the picture?', a:'I can see a cute baby.', say:'baby' },
+  { id:'boy', word:'boy', theme:'family', emoji:'👦', img:'family_boy.png', q:'What can you see in the picture?', a:'I can see a little boy.', say:'boy' },
+  { id:'brother', word:'brother', theme:'family', emoji:'👦', img:'family_brother.png', q:'What is the relationship between the two children?', a:'They are brother and sister.', say:'brother' },
+  { id:'cousin', word:'cousin', theme:'family', emoji:'👧', img:'family_cousin.png', q:'Who is the woman?', a:'She is her cousin.', say:'cousin' },
+  { id:'daughter', word:'daughter', theme:'family', emoji:'👧', img:'family_daughter.png', q:'How many people are there?', a:'There are three: a mother and two daughters.', say:'daughter' },
+  { id:'father', word:'father', theme:'family', emoji:'👨', img:'family_father.png', q:'Who is this man?', a:'He is the boy\'s father.', say:'father' },
+  { id:'grandma', word:'grandma', theme:'family', emoji:'👵', img:'family_grandma.png', q:'Who is the woman?', a:'She is a grandma.', say:'grandma' },
+  { id:'grandpa', word:'grandpa', theme:'family', emoji:'👴', img:'family_grandpa.png', q:'Who is the man?', a:'He is a grandpa.', say:'grandpa' },
+  { id:'husband', word:'husband', theme:'family', emoji:'🤵', img:'family_husband.png', q:'Who are the two people?', a:'They are a husband and his wife.', say:'husband' },
+  { id:'man', word:'man', theme:'family', emoji:'🧔', img:'family_man.png', q:'What can you see in the picture?', a:'I can see a young man.', say:'man' },
+  { id:'mother', word:'mother', theme:'family', emoji:'👩', img:'family_mother.png', q:'Who is the woman?', a:'She is the little girl\'s mother.', say:'mother' },
+  { id:'nanny', word:'nanny', theme:'family', emoji:'👩‍🍼', img:'family_nanny.png', q:'Who is the woman?', a:'She is a nanny.', say:'nanny' },
+  { id:'sister', word:'sister', theme:'family', emoji:'👧', img:'family_sister.png', q:'Who are the two little girls?', a:'They are sisters.', say:'sister' },
+  { id:'son', word:'son', theme:'family', emoji:'👦', img:'family_son.png', q:'Who is the little boy?', a:'He is the woman\'s son.', say:'son' },
+  { id:'uncle', word:'uncle', theme:'family', emoji:'👨', img:'family_uncle.png', q:'Who is the man?', a:'He is the boy\'s uncle.', say:'uncle' },
+  { id:'wife', word:'wife', theme:'family', emoji:'👰', img:'family_wife.png', q:'What can you see in the picture?', a:'I can see a couple.', say:'wife' },
+  { id:'women', word:'women', theme:'family', emoji:'👩‍👩‍👧', img:'family_women.png', q:'What can you see in the picture?', a:'I can see some women and balloons.', say:'women' },
+
+  // ---------------- 食物 (40) ----------------
+  { id:'bread', word:'bread', theme:'food', emoji:'🍞', img:'food_bread.png', q:'What can you see in the picture?', a:'I can see several pieces of bread.', say:'bread' },
+  { id:'broccoli', word:'broccoli', theme:'food', emoji:'🥦', img:'food_broccoli.png', q:'What can you see in the picture?', a:'I can see some broccoli.', say:'broccoli' },
+  { id:'burger', word:'burger', theme:'food', emoji:'🍔', img:'food_burger.png', q:'What can you see in the picture?', a:'I can see two burgers.', say:'burger' },
+  { id:'cake', word:'cake', theme:'food', emoji:'🎂', img:'food_cake.png', q:'What can you see in the picture?', a:'I can see a chocolate cake.', say:'cake' },
+  { id:'candy', word:'candy', theme:'food', emoji:'🍬', img:'food_candy.png', q:'What can you see in the picture?', a:'I can see many colorful candies.', say:'candy' },
+  { id:'carrot', word:'carrot', theme:'food', emoji:'🥕', img:'food_carrot.png', q:'What can you see in the picture?', a:'I can see a carrot.', say:'carrot' },
+  { id:'cherry', word:'cherry', theme:'food', emoji:'🍒', img:'food_cherry.png', q:'What can you see in the picture?', a:'I can see some cherries.', say:'cherry' },
+  { id:'chicken_food', word:'chicken', theme:'food', emoji:'🍗', img:'food_chicken_food.png', q:'What can you see in the picture?', a:'I can see a roasted chicken.', say:'chicken' },
+  { id:'chocolate', word:'chocolate', theme:'food', emoji:'🍫', img:'food_chocolate.png', q:'What can you see in the picture?', a:'I can see many different kinds of chocolates.', say:'chocolate' },
+  { id:'coconut', word:'coconut', theme:'food', emoji:'🥥', img:'food_coconut.png', q:'What can you see in the picture?', a:'I can see one and a half coconuts.', say:'coconut' },
+  { id:'cookie', word:'cookie', theme:'food', emoji:'🍪', img:'food_cookie.png', q:'What do you see in the picture?', a:'I see some cookies.', say:'cookie' },
+  { id:'donuts', word:'donuts', theme:'food', emoji:'🍩', img:'food_donuts.png', q:'What do you see in the picture?', a:'I see many colorful donuts.', say:'donuts' },
+  { id:'eggs', word:'eggs', theme:'food', emoji:'🥚', img:'food_eggs.png', q:'What do you see in the picture?', a:'I see many boiled eggs.', say:'eggs' },
+  { id:'ginger', word:'ginger', theme:'food', emoji:'🫚', img:'food_ginger.png', q:'What do you see in the picture?', a:'I see a whole ginger and some sliced ginger.', say:'ginger' },
+  { id:'grape', word:'grape', theme:'food', emoji:'🍇', img:'food_grape.png', q:'What do you see in the picture?', a:'I see two bunches of grapes.', say:'grape' },
+  { id:'jam', word:'jam', theme:'food', emoji:'🍓', img:'food_jam.png', q:'What do you see in the picture?', a:'I see some strawberries and jars of strawberry jam.', say:'jam' },
+  { id:'juice', word:'juice', theme:'food', emoji:'🧃', img:'food_juice.png', q:'What can you see in the picture?', a:'I can see a glass of orange juice and some oranges.', say:'juice' },
+  { id:'ketchup', word:'ketchup', theme:'food', emoji:'🍅', img:'food_ketchup.png', q:'What do you see in the picture?', a:'I see a bottle of ketchup and some fries.', say:'ketchup' },
+  { id:'kiwi', word:'kiwi', theme:'food', emoji:'🥝', img:'food_kiwi.png', q:'What do you see in the picture?', a:'I see some kiwis.', say:'kiwi' },
+  { id:'lemonade', word:'lemonade', theme:'food', emoji:'🍋', img:'food_lemonade.png', q:'What can you see in the picture?', a:'I can see two glasses of lemonade and some lemons.', say:'lemonade' },
+  { id:'lettuce', word:'lettuce', theme:'food', emoji:'🥬', img:'food_lettuce.png', q:'What can you see in the picture?', a:'I can see some lettuce.', say:'lettuce' },
+  { id:'lollipop', word:'lollipop', theme:'food', emoji:'🍭', img:'food_lollipop.png', q:'What can you see in the picture?', a:'I can see three colorful lollipops.', say:'lollipop' },
+  { id:'mango', word:'mango', theme:'food', emoji:'🥭', img:'food_mango.png', q:'What can you see in the picture?', a:'I can see many fresh mangoes.', say:'mango' },
+  { id:'meatballs', word:'meatballs', theme:'food', emoji:'🧆', img:'food_meatballs.png', q:'What can you see in the picture?', a:'I can see some meatballs on a plate.', say:'meatballs' },
+  { id:'milk', word:'milk', theme:'food', emoji:'🥛', img:'food_milk.png', q:'What can you see in the picture?', a:'I can see a glass of milk.', say:'milk' },
+  { id:'noodles', word:'noodles', theme:'food', emoji:'🍜', img:'food_noodles.png', q:'What can you see in the picture?', a:'I can see a bowl of tasty noodles.', say:'noodles' },
+  { id:'onion', word:'onion', theme:'food', emoji:'🧅', img:'food_onion.png', q:'What can you see in the picture?', a:'I can see some onions.', say:'onion' },
+  { id:'orange_fruit', word:'orange', theme:'food', emoji:'🍊', img:'food_orange_fruit.png', q:'What can you see in the picture?', a:'I can see some oranges.', say:'orange' },
+  { id:'pancakes', word:'pancakes', theme:'food', emoji:'🥞', img:'food_pancakes.png', q:'What can you see in the picture?', a:'I can see some pancakes.', say:'pancakes' },
+  { id:'pear', word:'pear', theme:'food', emoji:'🍐', img:'food_pear.png', q:'What can you see in the picture?', a:'I can see many fresh pears.', say:'pear' },
+  { id:'pineapple', word:'pineapple', theme:'food', emoji:'🍍', img:'food_pineapple.png', q:'What can you see in the picture?', a:'I can see some pineapples.', say:'pineapple' },
+  { id:'potato_chips', word:'potato chips', theme:'food', emoji:'🍟', img:'food_potato_chips.png', q:'What can you see in the picture?', a:'I can see a plate of crispy potato chips.', say:'potato chips' },
+  { id:'potato', word:'potato', theme:'food', emoji:'🥔', img:'food_potato.png', q:'What can you see in the picture?', a:'I can see some potatoes.', say:'potato' },
+  { id:'salad', word:'salad', theme:'food', emoji:'🥗', img:'food_salad.png', q:'What can you see in the picture?', a:'I can see a bowl of vegetable salad.', say:'salad' },
+  { id:'spaghetti', word:'spaghetti', theme:'food', emoji:'🍝', img:'food_spaghetti.png', q:'What can you see in the picture?', a:'I can see a plate of spaghetti.', say:'spaghetti' },
+  { id:'tea', word:'tea', theme:'food', emoji:'🍵', img:'food_tea.png', q:'What can you see in the picture?', a:'I can see a glass teapot and a cup of tea.', say:'tea' },
+  { id:'toast', word:'toast', theme:'food', emoji:'🍞', img:'food_toast.png', q:'What can you see in the picture?', a:'I can see two pieces of toast on a plate.', say:'toast' },
+  { id:'tomato', word:'tomato', theme:'food', emoji:'🍅', img:'food_tomato.png', q:'What can you see in the picture?', a:'I can see four tomatoes.', say:'tomato' },
+  { id:'turkey', word:'turkey', theme:'food', emoji:'🦃', img:'food_turkey.png', q:'What can you see in the picture?', a:'I can see a whole roasted turkey.', say:'turkey' },
+  { id:'water', word:'water', theme:'food', emoji:'💧', img:'food_water.png', q:'What can you see in the picture?', a:'I can see water being poured from a pitcher into a glass.', say:'water' },
+
+  // ---------------- 数字 (20) ----------------
+  { id:'one', word:'one', theme:'numbers', emoji:'1️⃣', img:'numbers_one.png', q:'What number is this?', a:'It\'s number one.', say:'one' },
+  { id:'two', word:'two', theme:'numbers', emoji:'2️⃣', img:'numbers_two.png', q:'What number is this?', a:'It\'s number two.', say:'two' },
+  { id:'three', word:'three', theme:'numbers', emoji:'3️⃣', img:'numbers_three.png', q:'What number is this?', a:'It\'s number three.', say:'three' },
+  { id:'four', word:'four', theme:'numbers', emoji:'4️⃣', img:'numbers_four.png', q:'What number is this?', a:'It\'s number four.', say:'four' },
+  { id:'five', word:'five', theme:'numbers', emoji:'5️⃣', img:'numbers_five.png', q:'What number is this?', a:'It\'s number five.', say:'five' },
+  { id:'six', word:'six', theme:'numbers', emoji:'6️⃣', img:'numbers_six.png', q:'What number is this?', a:'It\'s number six.', say:'six' },
+  { id:'seven', word:'seven', theme:'numbers', emoji:'7️⃣', img:'numbers_seven.png', q:'What number is this?', a:'It\'s number seven.', say:'seven' },
+  { id:'eight', word:'eight', theme:'numbers', emoji:'8️⃣', img:'numbers_eight.png', q:'What number is this?', a:'It\'s number eight.', say:'eight' },
+  { id:'nine', word:'nine', theme:'numbers', emoji:'9️⃣', img:'numbers_nine.png', q:'What number is this?', a:'It\'s number nine.', say:'nine' },
+  { id:'ten', word:'ten', theme:'numbers', emoji:'🔟', img:'numbers_ten.png', q:'What number is this?', a:'It\'s number ten.', say:'ten' },
+  { id:'eleven', word:'eleven', theme:'numbers', emoji:'1️⃣1️⃣', img:'numbers_eleven.png', q:'What number is this?', a:'It\'s number eleven.', say:'eleven' },
+  { id:'twelve', word:'twelve', theme:'numbers', emoji:'1️⃣2️⃣', img:'numbers_twelve.png', q:'What number is this?', a:'It\'s number twelve.', say:'twelve' },
+  { id:'thirteen', word:'thirteen', theme:'numbers', emoji:'1️⃣3️⃣', img:'numbers_thirteen.png', q:'What number is this?', a:'It\'s number thirteen.', say:'thirteen' },
+  { id:'fourteen', word:'fourteen', theme:'numbers', emoji:'1️⃣4️⃣', img:'numbers_fourteen.png', q:'What number is this?', a:'It\'s number fourteen.', say:'fourteen' },
+  { id:'fifteen', word:'fifteen', theme:'numbers', emoji:'1️⃣5️⃣', img:'numbers_fifteen.png', q:'What number is this?', a:'It\'s number fifteen.', say:'fifteen' },
+  { id:'sixteen', word:'sixteen', theme:'numbers', emoji:'1️⃣6️⃣', img:'numbers_sixteen.png', q:'What number is this?', a:'It\'s number sixteen.', say:'sixteen' },
+  { id:'seventeen', word:'seventeen', theme:'numbers', emoji:'1️⃣7️⃣', img:'numbers_seventeen.png', q:'What number is this?', a:'It\'s number seventeen.', say:'seventeen' },
+  { id:'eighteen', word:'eighteen', theme:'numbers', emoji:'1️⃣8️⃣', img:'numbers_eighteen.png', q:'What number is this?', a:'It\'s number eighteen.', say:'eighteen' },
+  { id:'nineteen', word:'nineteen', theme:'numbers', emoji:'1️⃣9️⃣', img:'numbers_nineteen.png', q:'What number is this?', a:'It\'s number nineteen.', say:'nineteen' },
+  { id:'twenty', word:'twenty', theme:'numbers', emoji:'2️⃣0️⃣', img:'numbers_twenty.png', q:'What number is this?', a:'It\'s number twenty.', say:'twenty' },
+
+  // ---------------- 学校 (20) ----------------
+  { id:'backpack', word:'backpack', theme:'school', emoji:'🎒', img:'school_backpack.png', q:'What can you see in the picture?', a:'I can see a black backpack.', say:'backpack' },
+  { id:'board', word:'board', theme:'school', emoji:'🖥️', img:'school_board.png', q:'What can you see in the picture?', a:'I can see a green blackboard.', say:'board' },
+  { id:'bookcase', word:'bookcase', theme:'school', emoji:'📚', img:'school_bookcase.png', q:'What can you see in the picture?', a:'I can see a wooden bookcase.', say:'bookcase' },
+  { id:'classroom', word:'classroom', theme:'school', emoji:'🏫', img:'school_classroom.png', q:'What place is this?', a:'This is a classroom.', say:'classroom' },
+  { id:'computer', word:'computer', theme:'school', emoji:'💻', img:'school_computer.png', q:'What can you see in the picture?', a:'I can see a computer.', say:'computer' },
+  { id:'desk_school', word:'desk', theme:'school', emoji:'🪑', img:'school_desk_school.png', q:'What can you see in the picture?', a:'I can see a brown desk.', say:'desk' },
+  { id:'flag', word:'flag', theme:'school', emoji:'🚩', img:'school_flag.png', q:'What can you see in the picture?', a:'I can see the national flag of China.', say:'flag' },
+  { id:'floor', word:'floor', theme:'school', emoji:'🏠', img:'school_floor.png', q:'What can you see in the picture?', a:'I can see a wooden floor.', say:'floor' },
+  { id:'glue', word:'glue', theme:'school', emoji:'🪚', img:'school_glue.png', q:'What can you see in the picture?', a:'I can see a bottle of glue.', say:'glue' },
+  { id:'marker', word:'marker', theme:'school', emoji:'🖊️', img:'school_marker.png', q:'What can you see in the picture?', a:'I can see a black marker.', say:'marker' },
+  { id:'paper', word:'paper', theme:'school', emoji:'📄', img:'school_paper.png', q:'What can you see in the picture?', a:'I can see a stack of white paper.', say:'paper' },
+  { id:'pen', word:'pen', theme:'school', emoji:'🖋️', img:'school_pen.png', q:'What can you see in the picture?', a:'I can see three pens.', say:'pen' },
+  { id:'pencil', word:'pencil', theme:'school', emoji:'✏️', img:'school_pencil.png', q:'What can you see in the picture?', a:'I can see a yellow pencil.', say:'pencil' },
+  { id:'rubber', word:'rubber', theme:'school', emoji:'🧼', img:'school_rubber.png', q:'What can you see in the picture?', a:'I can see some rubbers.', say:'rubber' },
+  { id:'ruler', word:'ruler', theme:'school', emoji:'📏', img:'school_ruler.png', q:'What can you see in the picture?', a:'I can see a ruler.', say:'ruler' },
+  { id:'scissors', word:'scissors', theme:'school', emoji:'✂️', img:'school_scissors.png', q:'What can you see in the picture?', a:'I can see a pair of scissors.', say:'scissors' },
+  { id:'storybook', word:'storybook', theme:'school', emoji:'📖', img:'school_storybook.png', q:'What can you see in the picture?', a:'I can see a Disney storybook.', say:'storybook' },
+  { id:'tape', word:'tape', theme:'school', emoji:'📎', img:'school_tape.png', q:'What can you see in the picture?', a:'I can see some rolls of tape.', say:'tape' },
+  { id:'teacher', word:'teacher', theme:'school', emoji:'👩‍🏫', img:'school_teacher.png', q:'What can you see in the picture?', a:'I can see a teacher standing by the blackboard.', say:'teacher' },
+  { id:'window', word:'window', theme:'school', emoji:'🪟', img:'school_window.png', q:'What can you see in the picture?', a:'I can see a white window.', say:'window' },
+
+  // ---------------- 形状 (10) ----------------
+  { id:'circle', word:'circle', theme:'shapes', emoji:'⭕', img:'shapes_circle.png', q:'What can you see in the picture?', a:'I can see a blue circle.', say:'circle' },
+  { id:'cone', word:'cone', theme:'shapes', emoji:'🔺', img:'shapes_cone.png', q:'What can you see in the picture?', a:'I can see an orange and white traffic cone.', say:'cone' },
+  { id:'cube', word:'cube', theme:'shapes', emoji:'🧊', img:'shapes_cube.png', q:'What can you see in the picture?', a:'I can see a Rubik\'s Cube.', say:'cube' },
+  { id:'diamond', word:'diamond', theme:'shapes', emoji:'💎', img:'shapes_diamond.png', q:'What can you see in the picture?', a:'I can see a shiny diamond.', say:'diamond' },
+  { id:'heart', word:'heart', theme:'shapes', emoji:'❤️', img:'shapes_heart.png', q:'What can you see in the picture?', a:'I can see a red heart.', say:'heart' },
+  { id:'oval', word:'oval', theme:'shapes', emoji:'🥚', img:'shapes_oval.png', q:'What can you see in the picture?', a:'I can see a golden oval frame.', say:'oval' },
+  { id:'rectangle', word:'rectangle', theme:'shapes', emoji:'🟦', img:'shapes_rectangle.png', q:'What can you see in the picture?', a:'I can see a green rectangle.', say:'rectangle' },
+  { id:'square', word:'square', theme:'shapes', emoji:'🟩', img:'shapes_square.png', q:'What can you see in the picture?', a:'I can see a black square.', say:'square' },
+  { id:'star', word:'star', theme:'shapes', emoji:'⭐', img:'shapes_star.png', q:'What can you see in the picture?', a:'I can see a golden star.', say:'star' },
+  { id:'triangle', word:'triangle', theme:'shapes', emoji:'🔺', img:'shapes_triangle.png', q:'What can you see in the picture?', a:'I can see a black triangle.', say:'triangle' },
+
+  // ---------------- 家 (30) ----------------
+  { id:'bath', word:'bath', theme:'home', emoji:'🛁', img:'home_bath.png', q:'What can you see in the picture?', a:'I can see a white bathtub.', say:'bath' },
+  { id:'bathroom', word:'bathroom', theme:'home', emoji:'🚿', img:'home_bathroom.png', q:'What can you see in the picture?', a:'I can see a clean bathroom.', say:'bathroom' },
+  { id:'bed', word:'bed', theme:'home', emoji:'🛏️', img:'home_bed.png', q:'What can you see in the picture?', a:'I can see a bed.', say:'bed' },
+  { id:'bedroom', word:'bedroom', theme:'home', emoji:'🛌', img:'home_bedroom.png', q:'What can you see in the picture?', a:'I can see a beautiful bedroom.', say:'bedroom' },
+  { id:'carpet', word:'carpet', theme:'home', emoji:'🟥', img:'home_carpet.png', q:'What can you see in the picture?', a:'I can see a red carpet on the floor.', say:'carpet' },
+  { id:'chair_home', word:'chair', theme:'home', emoji:'🪑', img:'home_chair_home.png', q:'What can you see in the picture?', a:'I can see a striped chair.', say:'chair' },
+  { id:'cooker', word:'cooker', theme:'home', emoji:'🍳', img:'home_cooker.png', q:'What can you see in the picture?', a:'I can see a big cooker.', say:'cooker' },
+  { id:'cup', word:'cup', theme:'home', emoji:'🍵', img:'home_cup.png', q:'What can you see in the picture?', a:'I can see a pretty cup and saucer.', say:'cup' },
+  { id:'cupboard', word:'cupboard', theme:'home', emoji:'🗄️', img:'home_cupboard.png', q:'What can you see in the picture?', a:'I can see a big cupboard.', say:'cupboard' },
+  { id:'desk_home', word:'desk', theme:'home', emoji:'🖥️', img:'home_desk_home.png', q:'What can you see in the picture?', a:'I can see a brown desk.', say:'desk' },
+  { id:'drawer', word:'drawer', theme:'home', emoji:'🗄️', img:'home_drawer.png', q:'What can you see in the picture?', a:'I can see a wooden drawer cabinet.', say:'drawer' },
+  { id:'flower', word:'flower', theme:'home', emoji:'🌸', img:'home_flower.png', q:'What can you see in the picture?', a:'I can see some flowers in a purple vase.', say:'flower' },
+  { id:'fridge', word:'fridge', theme:'home', emoji:'🧊', img:'home_fridge.png', q:'What can you see in the picture?', a:'I can see a fridge.', say:'fridge' },
+  { id:'garden', word:'garden', theme:'home', emoji:'🌻', img:'home_garden.png', q:'What can you see in the picture?', a:'I can see a beautiful garden with many flowers.', say:'garden' },
+  { id:'kitchen', word:'kitchen', theme:'home', emoji:'🍽️', img:'home_kitchen.png', q:'What can you see in the picture?', a:'I can see a modern kitchen.', say:'kitchen' },
+  { id:'lamp', word:'lamp', theme:'home', emoji:'💡', img:'home_lamp.png', q:'What can you see in the picture?', a:'I can see a table lamp.', say:'lamp' },
+  { id:'living_room', word:'living room', theme:'home', emoji:'🛋️', img:'home_living_room.png', q:'What can you see in the picture?', a:'I can see a living room.', say:'living room' },
+  { id:'pan', word:'pan', theme:'home', emoji:'🍳', img:'home_pan.png', q:'What can you see in the picture?', a:'I can see a black pan.', say:'pan' },
+  { id:'plate', word:'plate', theme:'home', emoji:'🍽️', img:'home_plate.png', q:'What can you see in the picture?', a:'I can see a white plate.', say:'plate' },
+  { id:'shelf', word:'shelf', theme:'home', emoji:'📚', img:'home_shelf.png', q:'What can you see in the picture?', a:'I can see a wooden shelf.', say:'shelf' },
+  { id:'shower_home', word:'shower', theme:'home', emoji:'🚿', img:'home_shower_home.png', q:'What can you see in the picture?', a:'I can see a shower set on the wall.', say:'shower' },
+  { id:'sofa', word:'sofa', theme:'home', emoji:'🛋️', img:'home_sofa.png', q:'What can you see in the picture?', a:'I can see a gray sofa.', say:'sofa' },
+  { id:'table', word:'table', theme:'home', emoji:'🪑', img:'home_table.png', q:'What can you see in the picture?', a:'I can see a wooden table with chairs and benches.', say:'table' },
+  { id:'teapot', word:'teapot', theme:'home', emoji:'🫖', img:'home_teapot.png', q:'What can you see in the picture?', a:'I can see a beautiful teapot.', say:'teapot' },
+  { id:'tv', word:'TV', theme:'home', emoji:'📺', img:'home_tv.png', q:'What can you see in the picture?', a:'I can see a television.', say:'TV' },
+  { id:'toilet', word:'toilet', theme:'home', emoji:'🚽', img:'home_toilet.png', q:'What can you see in the picture?', a:'I can see a white toilet.', say:'toilet' },
+  { id:'toys', word:'toys', theme:'home', emoji:'🧸', img:'home_toys.png', q:'What can you see in the picture?', a:'I can see many colorful toys.', say:'toys' },
+  { id:'trash_bin', word:'trash bin', theme:'home', emoji:'🗑️', img:'home_trash_bin.png', q:'What can you see in the picture?', a:'I can see a trash bin.', say:'trash bin' },
+  { id:'wardrobe', word:'wardrobe', theme:'home', emoji:'👗', img:'home_wardrobe.png', q:'What can you see in the picture?', a:'I can see a wardrobe with clothes inside.', say:'wardrobe' },
+  { id:'water_machine', word:'water machine', theme:'home', emoji:'🚰', img:'home_water_machine.png', q:'What can you see in the picture?', a:'I can see a water machine.', say:'water machine' },
+
+  // ---------------- 活动 (15) ----------------
+  { id:'dance', word:'dance', theme:'things', emoji:'💃', img:'things_dance.png', q:'What can you see in the picture?', a:'I can see two people dancing.', say:'dance' },
+  { id:'drink', word:'drink', theme:'things', emoji:'🥤', img:'things_drink.png', q:'What can you see?', a:'I can see an old lady drinking water.', say:'drink' },
+  { id:'eat', word:'eat', theme:'things', emoji:'🍽️', img:'things_eat.png', q:'What can you see in the picture?', a:'I can see a little girl eating fruit.', say:'eat' },
+  { id:'fly_kite', word:'fly a kite', theme:'things', emoji:'🪁', img:'things_fly_kite.png', q:'What can you see in the picture?', a:'I can see a boy flying a colorful kite.', say:'fly a kite' },
+  { id:'go_boating', word:'go boating', theme:'things', emoji:'🚣', img:'things_go_boating.png', q:'What can you see in the picture?', a:'I can see a woman in a boat.', say:'go boating' },
+  { id:'go_fishing', word:'go fishing', theme:'things', emoji:'🎣', img:'things_go_fishing.png', q:'What can you see in the picture?', a:'I can see a man and a little boy fishing.', say:'go fishing' },
+  { id:'jump', word:'jump', theme:'things', emoji:'🤸', img:'things_jump.png', q:'What can you see in the picture?', a:'I can see three ladies jumping happily.', say:'jump' },
+  { id:'listen_music', word:'listen to music', theme:'things', emoji:'🎧', img:'things_listen_music.png', q:'What can you see in the picture?', a:'I can see a boy listening to music.', say:'listen to music' },
+  { id:'play_basketball', word:'play basketball', theme:'things', emoji:'🏀', img:'things_play_basketball.png', q:'What can you see in the picture?', a:'I can see some boys playing basketball.', say:'play basketball' },
+  { id:'play_tennis', word:'play tennis', theme:'things', emoji:'🎾', img:'things_play_tennis.png', q:'What can you see in the picture?', a:'I can see a woman playing tennis.', say:'play tennis' },
+  { id:'ride_bike', word:'ride a bike', theme:'things', emoji:'🚲', img:'things_ride_bike.png', q:'What can you see in the picture?', a:'I can see two children riding bikes.', say:'ride a bike' },
+  { id:'smile', word:'smile', theme:'things', emoji:'😊', img:'things_smile.png', q:'What can you see in the picture?', a:'I can see a yellow smiley face.', say:'smile' },
+  { id:'swim', word:'swim', theme:'things', emoji:'🏊', img:'things_swim.png', q:'What can you see in the picture?', a:'I can see a man swimming in a pool.', say:'swim' },
+  { id:'walk', word:'walk', theme:'things', emoji:'🚶', img:'things_walk.png', q:'What can you see in the picture?', a:'I can see a little girl walking.', say:'walk' },
+  { id:'watch_tv', word:'watch TV', theme:'things', emoji:'📺', img:'things_watch_tv.png', q:'What can you see in the picture?', a:'I can see a family watching TV together.', say:'watch TV' },
+
+  // ---------------- 交通 (15) ----------------
+  { id:'airplane', word:'airplane', theme:'transport', emoji:'✈️', img:'transport_airplane.png', q:'What can you see in the picture?', a:'I can see a big airplane.', say:'airplane' },
+  { id:'ambulance', word:'ambulance', theme:'transport', emoji:'🚑', img:'transport_ambulance.png', q:'What can you see in the picture?', a:'I can see a yellow ambulance.', say:'ambulance' },
+  { id:'bike', word:'bike', theme:'transport', emoji:'🚲', img:'transport_bike.png', q:'What can you see in the picture?', a:'I can see a kids\' bike.', say:'bike' },
+  { id:'boat', word:'boat', theme:'transport', emoji:'⛵', img:'transport_boat.png', q:'What can you see in the picture?', a:'I can see a boat.', say:'boat' },
+  { id:'bus', word:'bus', theme:'transport', emoji:'🚌', img:'transport_bus.png', q:'What can you see in the picture?', a:'I can see a yellow school bus.', say:'bus' },
+  { id:'car', word:'car', theme:'transport', emoji:'🚗', img:'transport_car.png', q:'What can you see in the picture?', a:'I can see a red car.', say:'car' },
+  { id:'fire_engine', word:'fire engine', theme:'transport', emoji:'🚒', img:'transport_fire_engine.png', q:'What can you see in the picture?', a:'I can see a fire engine.', say:'fire engine' },
+  { id:'helicopter', word:'helicopter', theme:'transport', emoji:'🚁', img:'transport_helicopter.png', q:'What can you see in the picture?', a:'I can see a helicopter.', say:'helicopter' },
+  { id:'motorbike', word:'motorbike', theme:'transport', emoji:'🏍️', img:'transport_motorbike.png', q:'What can you see in the picture?', a:'I can see a motorbike.', say:'motorbike' },
+  { id:'police_car', word:'police car', theme:'transport', emoji:'🚓', img:'transport_police_car.png', q:'What can you see in the picture?', a:'I can see two police cars.', say:'police car' },
+  { id:'scooter', word:'scooter', theme:'transport', emoji:'🛵', img:'transport_scooter.png', q:'What can you see in the picture?', a:'I can see a scooter.', say:'scooter' },
+  { id:'ship', word:'ship', theme:'transport', emoji:'🚢', img:'transport_ship.png', q:'What can you see in the picture?', a:'I can see a big ship.', say:'ship' },
+  { id:'subway', word:'subway', theme:'transport', emoji:'🚇', img:'transport_subway.png', q:'What can you see in the picture?', a:'I can see a subway station with a train.', say:'subway' },
+  { id:'taxi', word:'taxi', theme:'transport', emoji:'🚕', img:'transport_taxi.png', q:'What can you see in the picture?', a:'I can see a yellow taxi.', say:'taxi' },
+  { id:'train', word:'train', theme:'transport', emoji:'🚂', img:'transport_train.png', q:'What can you see in the picture?', a:'I can see a long freight train.', say:'train' },
+
+  // ---------------- 天气 (10) ----------------
+  { id:'cloudy', word:'cloudy', theme:'weather', emoji:'☁️', img:'weather_cloudy.png', q:'What\'s the weather like?', a:'It\'s cloudy.', say:'cloudy' },
+  { id:'drizzly', word:'drizzly', theme:'weather', emoji:'🌧️', img:'weather_drizzly.png', q:'What\'s the weather like?', a:'It\'s drizzly.', say:'drizzly' },
+  { id:'foggy', word:'foggy', theme:'weather', emoji:'🌫️', img:'weather_foggy.png', q:'What\'s the weather like?', a:'It\'s foggy.', say:'foggy' },
+  { id:'lightning', word:'lightning', theme:'weather', emoji:'⚡', img:'weather_lightning.png', q:'What\'s the weather like?', a:'It\'s lightning.', say:'lightning' },
+  { id:'rainy', word:'rainy', theme:'weather', emoji:'🌧️', img:'weather_rainy.png', q:'What\'s the weather like?', a:'It\'s rainy.', say:'rainy' },
+  { id:'snowy', word:'snowy', theme:'weather', emoji:'❄️', img:'weather_snowy.png', q:'What\'s the weather like?', a:'It\'s snowy.', say:'snowy' },
+  { id:'stormy', word:'stormy', theme:'weather', emoji:'⛈️', img:'weather_stormy.png', q:'What\'s the weather like?', a:'It\'s stormy.', say:'stormy' },
+  { id:'sunny', word:'sunny', theme:'weather', emoji:'☀️', img:'weather_sunny.png', q:'What\'s the weather like?', a:'It\'s sunny.', say:'sunny' },
+  { id:'tornado', word:'tornado', theme:'weather', emoji:'🌪️', img:'weather_tornado.png', q:'What can you see in the picture?', a:'I can see a big tornado spinning in the sky.', say:'tornado' },
+  { id:'windy', word:'windy', theme:'weather', emoji:'💨', img:'weather_windy.png', q:'What\'s the weather like?', a:'It\'s windy.', say:'windy' },
+
+  // ---------------- 地点 (25) ----------------
+  { id:'airport', word:'airport', theme:'places', emoji:'🛫', img:'places_airport.png', q:'What do you see in the picture?', a:'I see an airport.', say:'airport' },
+  { id:'beach', word:'beach', theme:'places', emoji:'🏖️', img:'places_beach.png', q:'What do you see in the picture?', a:'I see a beautiful beach.', say:'beach' },
+  { id:'behind', word:'behind', theme:'places', emoji:'👤', img:'places_behind.png', q:'Where is the little boy?', a:'The boy is behind the books.', say:'behind' },
+  { id:'between', word:'between', theme:'places', emoji:'↔️', img:'places_between.png', q:'Where is the little mouse?', a:'The mouse is between the two blocks.', say:'between' },
+  { id:'bookstore', word:'bookstore', theme:'places', emoji:'📚', img:'places_bookstore.png', q:'What do you see in the picture?', a:'I see a tidy bookstore.', say:'bookstore' },
+  { id:'bus_station', word:'bus station', theme:'places', emoji:'🚏', img:'places_bus_station.png', q:'What do you see in the picture?', a:'I see a bus station.', say:'bus station' },
+  { id:'garage', word:'garage', theme:'places', emoji:'🏠', img:'places_garage.png', q:'What do you see in the picture?', a:'I see a clean garage.', say:'garage' },
+  { id:'home_places', word:'home', theme:'places', emoji:'🏡', img:'places_home_places.png', q:'What do you see in the picture?', a:'I see a beautiful house.', say:'home' },
+  { id:'in_front_of', word:'in front of', theme:'places', emoji:'🐕', img:'places_in_front_of.png', q:'Where is the dog?', a:'The dog is in front of the doghouse.', say:'in front of' },
+  { id:'in', word:'in', theme:'places', emoji:'📦', img:'places_in.png', q:'Where is the teddy bear?', a:'It\'s in the donation box.', say:'in' },
+  { id:'library', word:'library', theme:'places', emoji:'📚', img:'places_library.png', q:'What do you see in the picture?', a:'I see a quiet library.', say:'library' },
+  { id:'next_to', word:'next to', theme:'places', emoji:'🐶', img:'places_next_to.png', q:'Where is the dog?', a:'The dog is next to the man.', say:'next to' },
+  { id:'on', word:'on', theme:'places', emoji:'🏀', img:'places_on.png', q:'Where is the basketball?', a:'The basketball is on the cube.', say:'on' },
+  { id:'opposite', word:'opposite', theme:'places', emoji:'↔️', img:'places_opposite.png', q:'What do you see in the picture?', a:'I see two arrows pointing in opposite directions.', say:'opposite' },
+  { id:'over', word:'over', theme:'places', emoji:'🐑', img:'places_over.png', q:'Where is the middle sheep?', a:'It\'s jumping over the fence.', say:'over' },
+  { id:'park', word:'park', theme:'places', emoji:'🌳', img:'places_park.png', q:'What can you see in the picture?', a:'I can see a beautiful park.', say:'park' },
+  { id:'playground', word:'playground', theme:'places', emoji:'🛝', img:'places_playground.png', q:'What can you see in the picture?', a:'I can see a playground.', say:'playground' },
+  { id:'police_station', word:'police station', theme:'places', emoji:'🚔', img:'places_police_station.png', q:'What can you see in the picture?', a:'I can see a police station.', say:'police station' },
+  { id:'post_office', word:'post office', theme:'places', emoji:'🏤', img:'places_post_office.png', q:'What can you see in the picture?', a:'I can see a post office.', say:'post office' },
+  { id:'restaurant', word:'restaurant', theme:'places', emoji:'🍽️', img:'places_restaurant.png', q:'What can you see in the picture?', a:'I can see a restaurant.', say:'restaurant' },
+  { id:'school_place', word:'school', theme:'places', emoji:'🏫', img:'places_school_place.png', q:'What can you see in the picture?', a:'I can see a school and many students.', say:'school' },
+  { id:'shopping_mall', word:'shopping mall', theme:'places', emoji:'🛍️', img:'places_shopping_mall.png', q:'What can you see in the picture?', a:'I can see a busy shopping mall.', say:'shopping mall' },
+  { id:'supermarket', word:'supermarket', theme:'places', emoji:'🏪', img:'places_supermarket.png', q:'What can you see in the picture?', a:'I can see a supermarket.', say:'supermarket' },
+  { id:'under', word:'under', theme:'places', emoji:'🐭', img:'places_under.png', q:'Where is the little mouse?', a:'It\'s under the cube.', say:'under' },
+  { id:'zoo', word:'zoo', theme:'places', emoji:'🦁', img:'places_zoo.png', q:'What can you see in the picture?', a:'I can see the sign of San Diego Zoo.', say:'zoo' },
+
+];
+
+// 主题配置
+const THEMES = {
+  clothes: { name_zh:'服装', icon:'👗', count:20, pdf:'clothes.pdf' },
+  routine: { name_zh:'日常', icon:'🏠', count:15, pdf:'routine.pdf' },
+  feelings: { name_zh:'心情', icon:'😊', count:15, pdf:'feelings.pdf' },
+  animals: { name_zh:'动物', icon:'🐘', count:42, pdf:'animals.pdf' },
+  adjectives: { name_zh:'形容词', icon:'📏', count:10, pdf:'adjectives.pdf' },
+  colors: { name_zh:'颜色', icon:'🎨', count:15, pdf:'colors.pdf' },
+  family: { name_zh:'家人', icon:'👨‍👩‍👧‍👦', count:18, pdf:'family.pdf' },
+  food: { name_zh:'食物', icon:'🍔', count:40, pdf:'food.pdf' },
+  numbers: { name_zh:'数字', icon:'🔢', count:20, pdf:'numbers.pdf' },
+  school: { name_zh:'学校', icon:'🏫', count:20, pdf:'school.pdf' },
+  shapes: { name_zh:'形状', icon:'🔷', count:10, pdf:'shapes.pdf' },
+  home: { name_zh:'家', icon:'🏡', count:30, pdf:'home.pdf' },
+  things: { name_zh:'活动', icon:'⚽', count:15, pdf:'things.pdf' },
+  transport: { name_zh:'交通', icon:'🚗', count:15, pdf:'transport.pdf' },
+  weather: { name_zh:'天气', icon:'🌤️', count:10, pdf:'weather.pdf' },
+  places: { name_zh:'地点', icon:'📍', count:25, pdf:'places.pdf' },
+};
+
+// 总计 320 个词汇，16 个主题
+// 自动生成于 
+
+// 主题配置
+const THEMES = {
+  clothes: { name_zh:'服装', icon:'👗', count:20 },
+  routine: { name_zh:'日常', icon:'🏠', count:15 },
+  feelings: { name_zh:'心情', icon:'😊', count:15 },
+  animals: { name_zh:'动物', icon:'🐘', count:42 },
+  adjectives: { name_zh:'形容词', icon:'📏', count:10 },
+  colors: { name_zh:'颜色', icon:'🎨', count:15 },
+  family: { name_zh:'家人', icon:'👨‍👩‍👧‍👦', count:18 },
+  food: { name_zh:'食物', icon:'🍔', count:40 },
+  numbers: { name_zh:'数字', icon:'🔢', count:20 },
+  school: { name_zh:'学校', icon:'🏫', count:20 },
+  shapes: { name_zh:'形状', icon:'🔷', count:10 },
+  home: { name_zh:'家', icon:'🏡', count:30 },
+  things: { name_zh:'活动', icon:'⚽', count:15 },
+  transport: { name_zh:'交通', icon:'🚗', count:15 },
+  weather: { name_zh:'天气', icon:'🌤️', count:10 },
+  places: { name_zh:'地点', icon:'📍', count:25 },
+};
+
+// 辅助：修复图片名映射 (代码中 .png -> 实际 .jpg)
+function imgKey(word) {
+  return word.img.replace('.png','.jpg');
+}
+
+/* ============ 游戏逻辑 ============ */
+"use strict";
+const $ = id => document.getElementById(id);
+const shuffle = arr => { const a=[...arr]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const now = () => Date.now();
+
+/* ---------- 存档（记忆曲线 SM-2） ---------- */
+const SAVE_KEY = "ultra_english_save_v2";
+let save = { energy:0, medals:0, planetStars:{}, srs:{} };
+try { const s = localStorage.getItem(SAVE_KEY); if (s) save = Object.assign(save, JSON.parse(s)); } catch(e){}
+function persist(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(save)); }catch(e){} }
+
+const BOX_GAP = [0, 30*60e3, 12*3600e3, 24*3600e3, 3*24*3600e3, 7*24*3600e3, 15*24*3600e3];
+function srsOf(id){
+  if(!save.srs[id]) save.srs[id] = { box:0, due:0, wrong:0, right:0, seen:0 };
+  return save.srs[id];
+}
+function srsAnswer(id, correct){
+  const s = srsOf(id);
+  s.seen++;
+  if(correct){ s.right++; s.box = Math.min(s.box+1, BOX_GAP.length-1); }
+  else { s.wrong++; s.box = Math.max(0, s.box>2 ? 1 : 0); }
+  s.due = now() + BOX_GAP[s.box];
+  persist();
+}
+function dueReviewWords(){
+  return WORD_BANK.filter(w => { const s = save.srs[w.id]; return s && s.seen>0 && (s.due <= now() || s.wrong > s.right); })
+    .sort((a,b)=>{ const sa=save.srs[a.id], sb=save.srs[b.id];
+      return (sb.wrong - sb.right) - (sa.wrong - sa.right) || sa.due - sb.due; });
+}
+
+/* ---------- 英音 TTS ---------- */
+let voiceGB = null;
+function pickVoice(){
+  const vs = speechSynthesis.getVoices();
+  voiceGB = vs.find(v=>/en-GB/i.test(v.lang) && /female|hazel|susan|libby|sonia|kate/i.test(v.name))
+        || vs.find(v=>/en-GB/i.test(v.lang))
+        || vs.find(v=>/^en/i.test(v.lang)) || null;
+}
+if ("speechSynthesis" in window){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function speak(text, rate=0.85){
+  if(!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-GB"; if(voiceGB) u.voice = voiceGB;
+  u.rate = rate; u.pitch = 1.05; u.volume = 1;
+  speechSynthesis.speak(u);
+}
+
+/* ---------- 音效合成 ---------- */
+let AC = null;
+function ac(){ if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==="suspended") AC.resume(); return AC; }
+function tone(freq, t0, dur, type="sine", vol=0.25){
+  const ctx = ac(), o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(0, ctx.currentTime+t0);
+  g.gain.linearRampToValueAtTime(vol, ctx.currentTime+t0+0.02);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+t0+dur);
+  o.connect(g).connect(ctx.destination);
+  o.start(ctx.currentTime+t0); o.stop(ctx.currentTime+t0+dur+0.05);
+}
+const sfx = {
+  tap(){ tone(660,0,.08,"triangle",.15); },
+  right(){ [523,659,784,1047].forEach((f,i)=>tone(f,i*.09,.22,"triangle",.22)); },
+  wrong(){ tone(220,0,.25,"sawtooth",.12); tone(174,.12,.3,"sawtooth",.12); },
+  combo(){ [784,988,1175,1568].forEach((f,i)=>tone(f,i*.07,.18,"square",.12)); },
+  win(){ [523,659,784,1047,1319,1568].forEach((f,i)=>tone(f,i*.12,.35,"triangle",.22)); },
+  beam(){ for(let i=0;i<14;i++) tone(300+i*140, i*.03, .12, "sawtooth", .05); }
+};
+
+/* ---------- 星空背景 ---------- */
+(function makeStars(){
+  const box = $("stars"), colors = ['w','w','w','b','b','g','g','r'];
+  for(let i=0;i<80;i++){
+    const s = document.createElement("div"); s.className="star "+colors[Math.floor(Math.random()*colors.length)];
+    const sz = Math.random()*2.8+1;
+    s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*2.6}s`;
+    box.appendChild(s);
+  }
+})();
+
+/* ---------- Canvas 粒子特效 ---------- */
+const cvs = $("fxCanvas"), ctx2 = cvs.getContext("2d");
+let parts = [];
+function fitCanvas(){ cvs.width = innerWidth; cvs.height = innerHeight; }
+addEventListener("resize", fitCanvas); fitCanvas();
+function burst(x, y, colors, n=36, spread=9){
+  for(let i=0;i<n;i++){
+    const a = Math.random()*Math.PI*2, sp = Math.random()*spread+2;
+    parts.push({ x, y, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-3, g:.25,
+      life:1, decay:.012+Math.random()*.02, size:Math.random()*7+4,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      shape: Math.random()<.3 ? "star" : "rect", rot:Math.random()*6.28, vr:(Math.random()-.5)*.3 });
+  }
+}
+function drawStarShape(c,x,y,r,rot){
+  c.beginPath();
+  for(let i=0;i<10;i++){ const rr = i%2? r*.45 : r, a = rot + i*Math.PI/5;
+    i? c.lineTo(x+Math.cos(a)*rr, y+Math.sin(a)*rr) : c.moveTo(x+Math.cos(a)*rr, y+Math.sin(a)*rr); }
+  c.closePath(); c.fill();
+}
+(function loop(){
+  ctx2.clearRect(0,0,cvs.width,cvs.height);
+  parts = parts.filter(p=>p.life>0);
+  for(const p of parts){
+    p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.life-=p.decay; p.rot+=p.vr;
+    ctx2.globalAlpha = Math.max(p.life,0); ctx2.fillStyle = p.color;
+    if(p.shape==="star") drawStarShape(ctx2,p.x,p.y,p.size,p.rot);
+    else { ctx2.save(); ctx2.translate(p.x,p.y); ctx2.rotate(p.rot); ctx2.fillRect(-p.size/2,-p.size/2,p.size,p.size); ctx2.restore(); }
+  }
+  ctx2.globalAlpha = 1;
+  requestAnimationFrame(loop);
+})();
+const ULTRA_COLORS = ["#00E5FF","#FFD700","#E50012","#7B2FFF","#00FF88","#fff","#FF6600"];
+
+/* ---------- 屏幕切换 ---------- */
+function show(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  $(id).classList.add("active");
+}
+
+/* ---------- 首页 ---------- */
+function refreshHome(){
+  $("homeEnergy").textContent = save.energy;
+  $("homeMedals").textContent = save.medals;
+  const n = dueReviewWords().length;
+  const badge = $("reviewBadge");
+  badge.style.display = n? "block":"none"; badge.textContent = n;
+}
+refreshHome();
+
+/* ---------- 关卡选择 ---------- */
+function renderPlanets(){
+  const grid = $("planetGrid"); grid.innerHTML = "";
+  for(const key of Object.keys(THEMES)){
+    const t = THEMES[key];
+    const words = WORD_BANK.filter(w=>w.theme===key);
+    const learned = words.filter(w=> save.srs[w.id] && save.srs[w.id].seen>0).length;
+    const stars = save.planetStars[key]||0;
+    const el = document.createElement("div");
+    el.className = "planet-card";
+    el.innerHTML = `<span class="planet-icon">${t.icon}</span>
+      <div class="planet-name">${t.name_zh}</div>
+      <div class="planet-stars">${"★".repeat(stars)}${"☆".repeat(3-stars)}</div>
+      <div class="planet-count">${learned}/${words.length} 单词</div>`;
+    el.onclick = ()=>{ sfx.tap(); startRound(key); };
+    grid.appendChild(el);
+  }
+}
+
+/* ---------- 游戏出题 ---------- */
+const ROUND_SIZE = 8;
+let round = null;
+
+function buildOptions(word){
+  const pool = WORD_BANK.filter(w=>w.id!==word.id && w.theme===word.theme);
+  const others = shuffle(pool).slice(0,2);
+  while(others.length<2){
+    const extra = shuffle(WORD_BANK.filter(w=>w.id!==word.id && !others.includes(w)))[0];
+    others.push(extra);
+  }
+  return shuffle([word, ...others]);
+}
+
+function startRound(themeKey){
+  let words;
+  if(themeKey === "__review__"){
+    words = dueReviewWords().slice(0, ROUND_SIZE);
+    if(!words.length){ alert("太棒了！现在没有需要复习的单词 🎉"); return; }
+  } else {
+    const pool = WORD_BANK.filter(w=>w.theme===themeKey);
+    const scored = pool.map(w=>{ const s = save.srs[w.id];
+      let sc = Math.random();
+      if(!s || !s.seen) sc += 5;
+      else { if(s.wrong>s.right) sc += 8; if(s.due<=now()) sc += 3; }
+      return {w, sc};
+    }).sort((a,b)=>b.sc-a.sc);
+    words = scored.slice(0, ROUND_SIZE).map(x=>x.w);
+    words = shuffle(words);
+  }
+  round = { theme:themeKey, queue:words, idx:0, correct:0, energy:0, combo:0, retry:false };
+  show("screen-game");
+  $("hudEnergy").textContent = save.energy;
+  nextQuestion();
+}
+
+function nextQuestion(){
+  const r = round;
+  if(r.idx >= r.queue.length){ endRound(); return; }
+  const word = r.queue[r.idx];
+  $("hudBar").style.width = (r.idx / r.queue.length * 100) + "%";
+  $("quizQuestion").textContent = word.q;
+  $("quizWordBadge").textContent = word.word;
+  $("answerLine").innerHTML = "";
+  $("comboTip").classList.remove("show");
+
+  // 图片：从外部文件加载（懒加载，首屏秒开）
+  const box = $("quizImage");
+  box.innerHTML = `<div class="fallback-emoji">${word.emoji}</div>`;
+  const im = new Image();
+  im.onload = ()=> { box.innerHTML=""; box.appendChild(im); };
+  im.onerror = ()=> {}; // keep emoji fallback
+  im.src = "img/" + imgKey(word);
+
+  // 选项
+  const opts = buildOptions(word);
+  const wrap = $("options"); wrap.innerHTML = "";
+  const tags = ["A","B","C"];
+  opts.forEach((o,i)=>{
+    const b = document.createElement("button");
+    b.className = "opt-btn";
+    b.innerHTML = `<span class="opt-tag">${tags[i]}</span>${o.word}`;
+    b.onclick = ()=> choose(b, o, word);
+    wrap.appendChild(b);
+  });
+
+  $("btnSpeakQ").onclick = ()=>{ sfx.tap(); speak(word.q); };
+  setTimeout(()=> speak(word.q), 350);
+}
+
+let locking = false;
+function choose(btn, opt, word){
+  if(locking) return;
+  const correct = opt.id === word.id;
+  // 读出所选单词（标准英音）
+  const speakText = opt.word === word.word ? (word.say || word.word) : (opt.say || opt.word);
+  speak(speakText);
+
+  if(correct){
+    locking = true;
+    btn.classList.add("correct");
+    document.querySelectorAll(".opt-btn").forEach(b=>{ if(b!==btn) b.classList.add("dim"); });
+    srsAnswer(word.id, !round.retry);
+    round.combo = round.retry ? 0 : round.combo+1;
+    if(!round.retry){
+      round.correct++;
+      const gain = 10 + (round.combo>=3 ? 5:0);
+      round.energy += gain; save.energy += gain; persist();
+      $("hudEnergy").textContent = save.energy;
+    }
+    sfx.right();
+    const rect = btn.getBoundingClientRect();
+    burst(rect.left+rect.width/2, rect.top+rect.height/2, ULTRA_COLORS, 40);
+    if(round.combo>=2 && !round.retry){
+      sfx.combo();
+      const tip = $("comboTip");
+      tip.textContent = `⚡ 连击 x${round.combo}！斯佩修姆光线！`;
+      tip.classList.add("show");
+      if(round.combo>=3){ $("beamFx").classList.add("on"); sfx.beam();
+        setTimeout(()=>$("beamFx").classList.remove("on"), 600); }
+    }
+    // 显示答案
+    $("answerLine").innerHTML = `✅ <span class="listen">${word.a} 🔊</span>`;
+    $("answerLine").querySelector(".listen").onclick = ()=> speak(word.a);
+    setTimeout(()=> speak(word.a), 900);
+    setTimeout(()=>{ locking=false; round.retry=false; round.idx++; nextQuestion(); }, 2600);
+  } else {
+    btn.classList.add("wrong");
+    setTimeout(()=>btn.classList.add("dim"), 400);
+    sfx.wrong();
+    if(!round.retry){ srsAnswer(word.id, false); }
+    round.retry = true; round.combo = 0;
+    $("answerLine").innerHTML = `💪 再试一次！Try again!`;
+  }
+}
+
+/* ---------- 结算 ---------- */
+function endRound(){
+  const r = round;
+  $("hudBar").style.width = "100%";
+  const ratio = r.correct / r.queue.length;
+  const stars = ratio >= 0.99 ? 3 : ratio >= 0.7 ? 2 : ratio >= 0.4 ? 1 : 0;
+  if(r.theme !== "__review__"){
+    if(stars > (save.planetStars[r.theme]||0)) save.planetStars[r.theme] = stars;
+  }
+  if(stars===3){ save.medals++; }
+  persist();
+
+  $("rsCorrect").textContent = `${r.correct}/${r.queue.length}`;
+  $("rsEnergy").textContent = "+" + r.energy;
+  $("resultTitle").textContent = stars===3 ? "🏆 完美通关！" : stars>=1 ? "✨ 闯关成功！" : "💪 再接再厉！";
+  $("resultStars").innerHTML = [0,1,2].map(i=>`<span class="${i<stars?'':'off'}">⭐</span>`).join("");
+  const dueN = dueReviewWords().length;
+  $("resultMsg").textContent = stars===3
+    ? "你获得了一枚光之勋章！所有怪兽都被打败了！"
+    : (dueN? `还有 ${dueN} 个单词怪兽等你消灭哦～` : "继续出征，收集更多光之能量吧！");
+  show("screen-result");
+  sfx.win();
+  speak(stars===3 ? "Perfect! You are a true Ultraman hero!" : stars>=1 ? "Well done! Keep fighting!" : "Keep trying! You can do it!");
+  let k = 0;
+  const timer = setInterval(()=>{
+    burst(Math.random()*innerWidth, Math.random()*innerHeight*0.5, ULTRA_COLORS, 30);
+    if(++k>=(stars+1)*2) clearInterval(timer);
+  }, 300);
+  refreshHome();
+}
+
+/* ---------- 事件绑定 ---------- */
+$("btnStart").onclick = ()=>{ ac(); sfx.tap(); renderPlanets(); show("screen-planets"); };
+$("btnReview").onclick = ()=>{ ac(); sfx.tap(); startRound("__review__"); };
+$("btnBackHome").onclick = ()=>{ sfx.tap(); refreshHome(); show("screen-home"); };
+$("btnQuit").onclick = ()=>{ speechSynthesis.cancel(); refreshHome(); show("screen-home"); };
+$("btnNext").onclick = ()=>{ sfx.tap(); renderPlanets(); show("screen-planets"); };
+$("btnResultHome").onclick = ()=>{ sfx.tap(); refreshHome(); show("screen-home"); };
+</script>
+</body>
+</html>
