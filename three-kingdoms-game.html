@@ -335,6 +335,63 @@ body {
   100% { opacity:0; transform:translateX(-50%) translateY(-40px); }
 }
 
+/* ===== 底部统计栏 ===== */
+.footer-bar {
+  position:fixed; bottom:0; left:0; right:0; z-index:30;
+  background:rgba(20,8,0,.92); backdrop-filter:blur(8px);
+  border-top:1px solid rgba(139,69,19,.4);
+  padding:6px 12px max(6px,env(safe-area-inset-bottom));
+  display:flex; align-items:center; justify-content:center;
+  gap:8px; flex-wrap:wrap; font-size:12px;
+}
+.footer-stat {
+  display:flex; align-items:center; gap:3px;
+  color:#d4a060; font-weight:600;
+}
+.footer-stat b { color:#FFD700; font-size:13px; min-width:18px; text-align:center; }
+.footer-divider { width:1px; height:14px; background:rgba(139,69,19,.4); margin:0 4px; }
+.like-btn {
+  background:none; border:none; font-size:18px; cursor:pointer;
+  padding:4px 8px; border-radius:14px; transition:transform .15s;
+  display:flex; align-items:center; gap:3px; color:#ff6666;
+}
+.like-btn:active { transform:scale(1.2); }
+.like-btn.liked { animation: heart-pop .5s ease; }
+@keyframes heart-pop {
+  0%{transform:scale(1)} 30%{transform:scale(1.5)} 60%{transform:scale(.9)} 100%{transform:scale(1)}
+}
+.like-btn.liked .heart-icon { filter:drop-shadow(0 0 8px #ff4444); }
+.share-btn {
+  background:rgba(255,215,0,.12); border:1px solid rgba(255,215,0,.35);
+  color:#FFD700; font-size:12px; padding:4px 12px; border-radius:14px;
+  cursor:pointer; font-weight:700; letter-spacing:1px;
+}
+.share-btn:active { background:rgba(255,215,0,.25); }
+.author-row {
+  width:100%; text-align:center; font-size:11px; color:rgba(255,200,150,.5);
+  margin-top:2px; letter-spacing:.5px;
+}
+.author-row a { color:rgba(255,200,150,.7); text-decoration:none; }
+.version-tag {
+  font-size:9px; color:rgba(255,200,150,.25); cursor:default;
+  user-select:none; margin-left:2px;
+}
+/* 管理面板 */
+.admin-panel {
+  position:fixed; bottom:60px; left:50%; transform:translateX(-50%);
+  background:rgba(20,8,0,.95); border:2px solid rgba(255,215,0,.5);
+  border-radius:16px; padding:16px 20px; z-index:35; display:none;
+  max-width:320px; width:90vw; backdrop-filter:blur(10px);
+  box-shadow:0 0 30px rgba(255,136,0,.2);
+}
+.admin-panel.show { display:block; animation: pop-in .3s ease; }
+.admin-panel h3 { color:#FFD700; font-size:15px; margin-bottom:8px; text-align:center; }
+.admin-row { display:flex; justify-content:space-between; padding:4px 0;
+  font-size:12px; color:#ffe0c0; border-bottom:1px solid rgba(139,69,19,.2); }
+.admin-row b { color:#FFD700; }
+.admin-close { position:absolute; top:6px; right:10px; background:none; border:none;
+  color:#d4a060; font-size:16px; cursor:pointer; }
+
 </style>
 </head>
 <body>
@@ -1598,8 +1655,149 @@ $("bgmToggle").onclick = (e) => {
   $("bgmToggle").textContent = on ? "🎵" : "🔇";
   $("bgmToggle").classList.toggle("off", !on);
 };
+
+/* ---------- 统计与后台监控 ---------- */
+const STATS_NS = 'three-kingdoms-game';
+const STATS_API = 'https://api.counterapi.dev/v1';
+
+async function statsFetch(path) {
+  try {
+    const resp = await fetch(`${STATS_API}/${STATS_NS}/${path}`, { signal: AbortSignal.timeout(8000) });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    return data.count ?? data.value ?? null;
+  } catch(e) { return null; }
+}
+
+// 初始化统计（页面加载时）
+async function initStats() {
+  // 递增并获取PV
+  const pv = await statsFetch('page-views/up');
+  if (pv !== null) {
+    $("statPV").textContent = pv;
+    $("adminPV").textContent = pv;
+  }
+  // 获取点赞数
+  const likes = await statsFetch('likes');
+  if (likes !== null) {
+    $("statLikes").textContent = likes;
+    $("adminLikes").textContent = likes;
+  }
+  // 检查是否已点赞
+  if (localStorage.getItem('tk_liked')) {
+    $("likeBtn").classList.add('liked');
+    $("likeBtn").querySelector('.heart-icon').textContent = '💖';
+  }
+}
+
+// 来源追踪
+function trackReferrer() {
+  const params = new URLSearchParams(location.search);
+  const from = params.get('from') || 'direct';
+  const refMap = {
+    'wechat':'ref-wechat','wechat-group':'ref-wechat-group',
+    'wechat-moment':'ref-wechat-moment','qq':'ref-qq',
+    'weibo':'ref-weibo','direct':'ref-direct'
+  };
+  const counter = refMap[from] || 'ref-direct';
+  statsFetch(counter + '/up');
+}
+
+// 加载管理面板数据
+async function loadAdminPanel() {
+  const refs = ['ref-wechat','ref-wechat-group','ref-wechat-moment','ref-qq','ref-direct'];
+  for (const r of refs) {
+    const val = await statsFetch(r);
+    const idMap = {
+      'ref-wechat':'adminWx','ref-wechat-group':'adminWxGroup',
+      'ref-wechat-moment':'adminWxMoment','ref-qq':'adminQQ','ref-direct':'adminDirect'
+    };
+    if (val !== null) $(idMap[r]).textContent = val;
+  }
+}
+
+// 点赞
+$("likeBtn").onclick = async () => {
+  if (localStorage.getItem('tk_liked')) return;
+  const likes = await statsFetch('likes/up');
+  if (likes !== null) {
+    $("statLikes").textContent = likes;
+    $("adminLikes").textContent = likes;
+    localStorage.setItem('tk_liked', '1');
+    $("likeBtn").classList.add('liked');
+    $("likeBtn").querySelector('.heart-icon').textContent = '💖';
+    // 粒子特效
+    const rect = $("likeBtn").getBoundingClientRect();
+    burst(rect.left+rect.width/2, rect.top, ['#ff4444','#ff8888','#FFD700','#fff'], 25, 6);
+    sfx.right();
+  }
+};
+
+// 分享
+$("shareBtn").onclick = () => {
+  const from = new URLSearchParams(location.search).get('from') || 'wechat';
+  const url = location.origin + location.pathname + '?from=' + from;
+  if (navigator.share) {
+    navigator.share({ title:'🏯 三国演义英语大闯关', text:'来一起学英语闯关吧！诸葛亮带你征服单词世界！', url });
+  } else {
+    // 复制链接
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => {
+        alert('📋 链接已复制！快分享给朋友吧～');
+      });
+    } else {
+      prompt('复制链接分享给朋友：', url);
+    }
+  }
+};
+
+// 隐藏管理面板（连续点击版本号5次打开）
+let versionClicks = 0;
+$("versionTag").onclick = (e) => {
+  e.stopPropagation();
+  versionClicks++;
+  if (versionClicks >= 5) {
+    versionClicks = 0;
+    $("adminPanel").classList.toggle('show');
+    if ($("adminPanel").classList.contains('show')) loadAdminPanel();
+  }
+  setTimeout(() => { if (versionClicks < 5) versionClicks = 0; }, 2000);
+};
+$("adminClose").onclick = () => $("adminPanel").classList.remove('show');
+
+// 页面加载时初始化
+initStats();
+trackReferrer();
 </script>
 
 <button class="bgm-btn" id="bgmToggle" title="BGM开关">🎵</button>
+
+<!-- 底部统计栏 -->
+<div class="footer-bar" id="footerBar">
+  <div class="footer-stat">👁️ <b id="statPV">---</b></div>
+  <div class="footer-divider"></div>
+  <button class="like-btn" id="likeBtn" title="点赞支持">
+    <span class="heart-icon">❤️</span> <b id="statLikes">---</b>
+  </button>
+  <div class="footer-divider"></div>
+  <button class="share-btn" id="shareBtn">📤 分享</button>
+  <span class="version-tag" id="versionTag">v2.0</span>
+  <div class="author-row">
+    ✍️ 作者邮箱：<a href="mailto:2303005753@qq.com">2303005753@qq.com</a>
+  </div>
+</div>
+
+<!-- 管理面板 -->
+<div class="admin-panel" id="adminPanel">
+  <button class="admin-close" id="adminClose">✕</button>
+  <h3>📊 数据面板</h3>
+  <div class="admin-row"><span>👁️ 总访问 PV</span><b id="adminPV">---</b></div>
+  <div class="admin-row"><span>❤️ 点赞数</span><b id="adminLikes">---</b></div>
+  <div class="admin-row"><span>💬 微信来源</span><b id="adminWx">---</b></div>
+  <div class="admin-row"><span>👥 微信群</span><b id="adminWxGroup">---</b></div>
+  <div class="admin-row"><span>🔄 朋友圈</span><b id="adminWxMoment">---</b></div>
+  <div class="admin-row"><span>🐧 QQ来源</span><b id="adminQQ">---</b></div>
+  <div class="admin-row"><span>🔗 直接访问</span><b id="adminDirect">---</b></div>
+</div>
 </body>
 </html>
