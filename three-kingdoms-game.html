@@ -1441,7 +1441,9 @@ function nextQuestion(){
   const word = r.queue[r.idx];
   $("hudBar").style.width = (r.idx / r.queue.length * 100) + "%";
   $("quizQuestion").textContent = word.q;
-  $("quizWordBadge").textContent = word.word;
+  // 隐藏正确答案单词，只出题不剧透
+  $("quizWordBadge").textContent = "❓ " + (word.theme ? THEMES[word.theme]?.name_zh || '' : '');
+  $("quizWordBadge").style.opacity = '0.45';
   $("answerLine").innerHTML = "";
   $("comboTip").classList.remove("show");
 
@@ -1612,7 +1614,9 @@ function choose(btn, opt, word){
         setTimeout(()=>$("beamFx").classList.remove("on"), 600); }
     }
     // 显示答案 — 答案语音延迟到鼓励语之后
-    $("answerLine").innerHTML = `✅ <span class="listen">${word.a} 🔊</span>`;
+    $("quizWordBadge").textContent = "✅ " + word.word;
+    $("quizWordBadge").style.opacity = '1';
+    $("answerLine").innerHTML = `🎉 <span class="listen">${word.a} 🔊</span>`;
     $("answerLine").querySelector(".listen").onclick = ()=> speak(word.a);
     // 答案朗读延迟到2.5s后（等鼓励语读完）
     setTimeout(()=> speak(word.a), 2500);
@@ -1627,7 +1631,9 @@ function choose(btn, opt, word){
     
     if(!round.retry){ srsAnswer(word.id, false); }
     round.retry = true; round.combo = 0;
-    $("answerLine").innerHTML = `💪 再试一次！Try again!`;
+    $("quizWordBadge").textContent = "❌ " + word.word;
+    $("quizWordBadge").style.opacity = '0.7';
+    $("answerLine").innerHTML = `💪 正确答案：<span class="listen">${word.word}</span>，再试一次！`;
   }
 }
 
