@@ -868,7 +868,7 @@ function nextQuestion(){
   const im = new Image();
   im.onload = ()=> { box.innerHTML=""; box.appendChild(im); };
   im.onerror = ()=> { box.innerHTML = `<div class="fallback-emoji">${word.emoji}</div>`; };
-  im.src = "img/" + word.img;
+  im.src = "img/" + word.img.replace('.png', '.jpg');
   box.innerHTML = `<div class="fallback-emoji">${word.emoji}</div>`;
 
   // 选项
