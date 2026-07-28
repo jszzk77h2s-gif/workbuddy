@@ -196,10 +196,221 @@ body {
 }
 .bgm-btn.off { color:rgba(255,255,255,.3); border-color:rgba(255,255,255,.15); box-shadow:none; }
 .bgm-btn:active { transform:scale(.9); }
+
+/* ===== 对战舞台 ===== */
+.battle-stage {
+  position:fixed; inset:0; pointer-events:none; z-index:15; display:none;
+  overflow:hidden;
+}
+.battle-stage.active { display:block; }
+
+/* 超人角色 */
+.hero-fighter {
+  position:absolute; bottom:10%; left:-120px; width:100px; height:130px;
+  transition: none;
+}
+.hero-fighter svg { width:100%; height:100%; filter:drop-shadow(0 0 15px rgba(0,102,255,.6)); }
+
+/* 怪兽角色 */
+.monster {
+  position:absolute; bottom:10%; right:-120px; width:110px; height:120px;
+  transition: none;
+}
+.monster svg { width:100%; height:100%; filter:drop-shadow(0 0 15px rgba(139,0,0,.6)); }
+
+/* 超人飞踢动画 */
+.hero-fighter.fly-kick {
+  animation: hero-fly-kick 1.2s cubic-bezier(.22,.61,.36,1) forwards;
+}
+@keyframes hero-fly-kick {
+  0% { left:-120px; bottom:10%; transform:rotate(0); }
+  30% { left:20%; bottom:50%; transform:rotate(-15deg); }
+  60% { left:50%; bottom:30%; transform:rotate(-30deg) scale(1.3); }
+  80% { left:55%; bottom:20%; transform:rotate(-20deg) scale(1.1); }
+  100% { left:80%; bottom:10%; transform:rotate(0) scale(1); }
+}
+
+/* 怪兽被踢飞 */
+.monster.hit {
+  animation: monster-hit 1.2s cubic-bezier(.22,.61,.36,1) forwards;
+}
+@keyframes monster-hit {
+  0% { right:-120px; bottom:10%; transform:rotate(0); opacity:1; }
+  30% { right:10%; bottom:15%; transform:rotate(5deg); opacity:1; }
+  60% { right:35%; bottom:25%; transform:rotate(45deg) scale(.8); opacity:1; }
+  80% { right:50%; bottom:40%; transform:rotate(90deg) scale(.5); opacity:.7; }
+  100% { right:70%; bottom:60%; transform:rotate(180deg) scale(.2); opacity:0; }
+}
+
+/* 怪兽攻击超人 */
+.monster.attack {
+  animation: monster-attack 1.2s cubic-bezier(.22,.61,.36,1) forwards;
+}
+@keyframes monster-attack {
+  0% { right:-120px; bottom:10%; transform:rotate(0); }
+  30% { right:15%; bottom:25%; transform:rotate(-5deg) scale(1.2); }
+  55% { right:35%; bottom:15%; transform:rotate(0) scale(1.4); }
+  70% { right:25%; bottom:12%; transform:rotate(5deg) scale(1.1); }
+  100% { right:0; bottom:10%; transform:rotate(0) scale(1); }
+}
+
+/* 超人被攻击 */
+.hero-fighter.hurt {
+  animation: hero-hurt 1.2s cubic-bezier(.22,.61,.36,1) forwards;
+}
+@keyframes hero-hurt {
+  0% { left:30%; bottom:10%; transform:rotate(0); }
+  30% { left:20%; bottom:20%; transform:rotate(-15deg); }
+  55% { left:10%; bottom:35%; transform:rotate(-30deg) scale(.8); }
+  70% { left:5%; bottom:20%; transform:rotate(-10deg) scale(.9); }
+  100% { left:-60px; bottom:5%; transform:rotate(0) scale(.85); opacity:.6; }
+}
+
+/* 冲击波特效 */
+.impact-burst {
+  position:absolute; width:60px; height:60px; border-radius:50%;
+  background:radial-gradient(circle, #fff, #FFD700, transparent);
+  opacity:0; transform:scale(0);
+}
+.impact-burst.show {
+  animation: impact-pop .6s ease-out forwards;
+}
+@keyframes impact-pop {
+  0% { opacity:1; transform:scale(0); }
+  50% { opacity:1; transform:scale(2.5); }
+  100% { opacity:0; transform:scale(3); }
+}
+
+/* KO 文字 */
+.ko-text {
+  position:absolute; top:25%; left:50%; transform:translate(-50%,-50%);
+  font-size:60px; font-weight:900; color:#FFD700;
+  text-shadow:0 0 30px #FFD700, 0 0 60px #ff6600, 0 6px 0 #8B0000;
+  opacity:0; z-index:20;
+  letter-spacing:8px;
+}
+.ko-text.show {
+  animation: ko-pop .8s cubic-bezier(.175,.885,.32,1.275) forwards;
+}
+@keyframes ko-pop {
+  0% { opacity:0; transform:translate(-50%,-50%) scale(0) rotate(-20deg); }
+  40% { opacity:1; transform:translate(-50%,-50%) scale(1.4) rotate(5deg); }
+  70% { opacity:1; transform:translate(-50%,-50%) scale(.9) rotate(-2deg); }
+  100% { opacity:1; transform:translate(-50%,-50%) scale(1) rotate(0); }
+}
+
+/* 鼓励文字气泡 */
+.encourage-bubble {
+  position:fixed; bottom:20%; left:50%; transform:translateX(-50%);
+  background:rgba(0,0,0,.85); color:#FFD700; font-size:18px; font-weight:700;
+  padding:10px 24px; border-radius:30px; z-index:25;
+  border:2px solid #FFD700; opacity:0;
+  white-space:nowrap; pointer-events:none;
+  box-shadow:0 0 20px rgba(255,215,0,.4);
+}
+.encourage-bubble.show {
+  animation: bubble-up 2s ease-out forwards;
+}
+@keyframes bubble-up {
+  0% { opacity:0; transform:translateX(-50%) translateY(20px); }
+  20% { opacity:1; transform:translateX(-50%) translateY(0); }
+  80% { opacity:1; transform:translateX(-50%) translateY(-10px); }
+  100% { opacity:0; transform:translateX(-50%) translateY(-40px); }
+}
+
 </style>
 </head>
 <body>
 <div id="stars"></div>
+
+<!-- 对战舞台 -->
+<div class="battle-stage" id="battleStage">
+  <div class="hero-fighter" id="heroFighter">
+    <svg viewBox="0 0 120 160" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="fbGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#0044CC"/><stop offset="50%" stop-color="#0066FF"/><stop offset="100%" stop-color="#003399"/>
+        </linearGradient>
+        <linearGradient id="frGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#E50012"/><stop offset="50%" stop-color="#FF3333"/><stop offset="100%" stop-color="#C8102E"/>
+        </linearGradient>
+        <linearGradient id="fsGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#FFF"/><stop offset="100%" stop-color="#A0B0D0"/>
+        </linearGradient>
+      </defs>
+      <polygon points="60,2 50,22 60,18" fill="url(#fsGrad)"/>
+      <polygon points="60,2 70,22 60,18" fill="url(#fsGrad)"/>
+      <ellipse cx="60" cy="38" rx="24" ry="26" fill="url(#fsGrad)"/>
+      <polygon points="44,32 52,29 52,36 44,39" fill="#FFE800"/>
+      <polygon points="76,32 68,29 68,36 76,39" fill="#FFE800"/>
+      <ellipse cx="60" cy="18" rx="3" ry="5" fill="#00FF88"/>
+      <rect x="38" y="62" width="44" height="50" rx="6" fill="url(#fbGrad)"/>
+      <path d="M42,64 L60,62 L78,64 L78,88 Q60,95 42,88 Z" fill="url(#frGrad)" opacity=".85"/>
+      <rect x="38" y="74" width="44" height="3" fill="url(#fsGrad)"/>
+      <circle cx="60" cy="80" r="7" fill="#00E5FF" opacity=".9">
+        <animate attributeName="opacity" values=".3;1;.3" dur="1.2s" repeatCount="indefinite"/>
+      </circle>
+      <rect x="14" y="64" width="24" height="14" rx="7" fill="url(#fbGrad)"/>
+      <rect x="82" y="64" width="24" height="14" rx="7" fill="url(#fbGrad)"/>
+      <rect x="14" y="64" width="24" height="5" rx="3" fill="url(#fsGrad)"/>
+      <rect x="82" y="64" width="24" height="5" rx="3" fill="url(#fsGrad)"/>
+      <circle cx="38" cy="71" r="8" fill="url(#fsGrad)"/>
+      <circle cx="82" cy="71" r="8" fill="url(#fsGrad)"/>
+      <rect x="42" y="110" width="16" height="22" rx="4" fill="url(#fbGrad)"/>
+      <rect x="62" y="110" width="16" height="22" rx="4" fill="url(#fbGrad)"/>
+      <rect x="43" y="118" width="14" height="3" rx="1" fill="url(#frGrad)"/>
+      <rect x="63" y="118" width="14" height="3" rx="1" fill="url(#frGrad)"/>
+    </svg>
+  </div>
+  <div class="monster" id="monster">
+    <svg viewBox="0 0 130 140" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="mgGrad" cx="50%" cy="30%">
+          <stop offset="0%" stop-color="#5a8a3c"/><stop offset="100%" stop-color="#2d4a1e"/>
+        </radialGradient>
+        <radialGradient id="mbGrad" cx="50%" cy="30%">
+          <stop offset="0%" stop-color="#8B4513"/><stop offset="100%" stop-color="#4a2008"/>
+        </radialGradient>
+      </defs>
+      <!-- 怪兽身体 -->
+      <ellipse cx="65" cy="80" rx="42" ry="50" fill="url(#mgGrad)"/>
+      <!-- 背刺 -->
+      <polygon points="40,45 35,20 50,42" fill="#6aaa40"/>
+      <polygon points="55,38 52,10 65,36" fill="#6aaa40"/>
+      <polygon points="70,38 70,8 80,36" fill="#6aaa40"/>
+      <polygon points="85,42 92,15 95,42" fill="#6aaa40"/>
+      <!-- 眼睛 -->
+      <ellipse cx="50" cy="55" rx="14" ry="16" fill="#FFE800"/>
+      <ellipse cx="80" cy="55" rx="14" ry="16" fill="#FFE800"/>
+      <ellipse cx="52" cy="56" rx="6" ry="10" fill="#1a1a2e"/>
+      <ellipse cx="82" cy="56" rx="6" ry="10" fill="#1a1a2e"/>
+      <circle cx="48" cy="52" r="3" fill="#fff" opacity=".8"/>
+      <circle cx="78" cy="52" r="3" fill="#fff" opacity=".8"/>
+      <!-- 嘴 -->
+      <path d="M45,75 Q65,95 85,75" fill="#8B0000" stroke="#4a0000" stroke-width="2"/>
+      <polygon points="50,72 55,68 60,72" fill="#fff"/>
+      <polygon points="65,72 70,68 75,72" fill="#fff"/>
+      <polygon points="80,72 85,68 90,72" fill="#fff"/>
+      <!-- 肚子纹理 -->
+      <ellipse cx="65" cy="95" rx="20" ry="16" fill="url(#mbGrad)" opacity=".6"/>
+      <!-- 手臂 -->
+      <ellipse cx="20" cy="75" rx="16" ry="10" fill="url(#mgGrad)" transform="rotate(-20,20,75)"/>
+      <ellipse cx="110" cy="75" rx="16" ry="10" fill="url(#mgGrad)" transform="rotate(20,110,75)"/>
+      <!-- 爪子 -->
+      <circle cx="8" cy="70" r="5" fill="#4a6a2e"/><circle cx="12" cy="78" r="5" fill="#4a6a2e"/>
+      <circle cx="122" cy="70" r="5" fill="#4a6a2e"/><circle cx="118" cy="78" r="5" fill="#4a6a2e"/>
+      <!-- 脚 -->
+      <ellipse cx="48" cy="128" rx="18" ry="8" fill="#4a6a2e"/>
+      <ellipse cx="82" cy="128" rx="18" ry="8" fill="#4a6a2e"/>
+      <!-- 尾巴 -->
+      <path d="M100,100 Q120,110 115,130 Q118,135 112,128" fill="none" stroke="#5a8a3c" stroke-width="8" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="impact-burst" id="impactBurst"></div>
+  <div class="ko-text" id="koText"></div>
+  <div class="encourage-bubble" id="encourageBubble"></div>
+</div>
+
 
 <!-- ========== 首页 ========== -->
 <div id="screen-home" class="screen active">
@@ -1095,6 +1306,114 @@ function nextQuestion(){
   setTimeout(()=> speak(word.q), 350);
 }
 
+
+/* ---------- 对战动画 ---------- */
+const ENCOURAGE_CORRECT = [
+  "Aden, you're awesome! 🌟",
+  "Amazing, Aden! You're a true hero! ⚡",
+  "Fantastic job, Aden! Keep going! 💪",
+  "Brilliant, Aden! The monster is defeated! 🏆",
+  "Super cool, Aden! You're unstoppable! 🔥",
+  "Wonderful, Aden! That was perfect! ✨",
+  "Great work, Aden! You're so smart! 🎯",
+  "Excellent, Aden! One punch KO! 👊",
+  "Incredible, Aden! The monster runs away! 🏃",
+  "You did it, Aden! You're the champion! 👑",
+];
+const ENCOURAGE_WRONG = [
+  "Nice try, Aden! You'll get it next time! 💪",
+  "Don't worry, Aden! Keep fighting! ⚡",
+  "Almost there, Aden! Try again! 🌟",
+  "Good effort, Aden! The hero never gives up! 🔥",
+  "Stay strong, Aden! You can do it! ✨",
+  "Keep going, Aden! Every hero falls sometimes! 🦸",
+  "You're brave, Aden! Try once more! 💫",
+  "It's okay, Aden! Practice makes perfect! 🎯",
+  "Believe in yourself, Aden! You're amazing! 🌈",
+  "Come on, Aden! Show that monster who's boss! 👊",
+];
+
+function randomPick(arr) { return arr[Math.floor(Math.random()*arr.length)]; }
+
+function playBattleAnimation(isWin) {
+  const stage = $("battleStage");
+  const hero = $("heroFighter");
+  const monster = $("monster");
+  const impact = $("impactBurst");
+  const ko = $("koText");
+  const bubble = $("encourageBubble");
+  
+  // Reset
+  hero.className = "hero-fighter";
+  monster.className = "monster";
+  impact.className = "impact-burst";
+  ko.className = "ko-text";
+  bubble.className = "encourage-bubble";
+  stage.classList.add("active");
+  
+  if (isWin) {
+    // 超人飞踢怪兽
+    setTimeout(() => {
+      hero.classList.add("fly-kick");
+      monster.classList.add("hit");
+    }, 100);
+    
+    // 冲击波在碰撞点
+    setTimeout(() => {
+      impact.style.left = "48%";
+      impact.style.top = "30%";
+      impact.classList.add("show");
+    }, 600);
+    
+    // KO 文字
+    setTimeout(() => {
+      ko.textContent = "KO!";
+      ko.classList.add("show");
+    }, 700);
+    
+    // 鼓励文字
+    setTimeout(() => {
+      const msg = randomPick(ENCOURAGE_CORRECT);
+      bubble.textContent = msg;
+      bubble.classList.add("show");
+      // 女声读鼓励语
+      speak(msg.replace(/[🌟⚡💪🏆🔥✨🎯👊🏃👑🦸💫🌈]/g,''), 0.78);
+    }, 500);
+    
+  } else {
+    // 怪兽攻击超人
+    setTimeout(() => {
+      monster.classList.add("attack");
+      hero.classList.add("hurt");
+    }, 100);
+    
+    // 冲击波
+    setTimeout(() => {
+      impact.style.left = "25%";
+      impact.style.top = "35%";
+      impact.classList.add("show");
+    }, 550);
+    
+    // 鼓励文字
+    setTimeout(() => {
+      const msg = randomPick(ENCOURAGE_WRONG);
+      bubble.textContent = msg;
+      bubble.classList.add("show");
+      speak(msg.replace(/[🌟⚡💪🏆🔥✨🎯👊🏃👑🦸💫🌈]/g,''), 0.78);
+    }, 500);
+  }
+  
+  // 清理
+  setTimeout(() => {
+    stage.classList.remove("active");
+    hero.className = "hero-fighter";
+    monster.className = "monster";
+    impact.className = "impact-burst";
+    ko.className = "ko-text";
+    bubble.className = "encourage-bubble";
+  }, 2800);
+}
+
 let locking = false;
 function choose(btn, opt, word){
   if(locking) return;
@@ -1118,6 +1437,10 @@ function choose(btn, opt, word){
     sfx.right();
     const rect = btn.getBoundingClientRect();
     burst(rect.left+rect.width/2, rect.top+rect.height/2, ULTRA_COLORS, 40);
+    
+    // 超人vs怪兽对战动画
+    playBattleAnimation(true);
+    
     if(round.combo>=2 && !round.retry){
       sfx.combo();
       const tip = $("comboTip");
@@ -1130,11 +1453,15 @@ function choose(btn, opt, word){
     $("answerLine").innerHTML = `✅ <span class="listen">${word.a} 🔊</span>`;
     $("answerLine").querySelector(".listen").onclick = ()=> speak(word.a);
     setTimeout(()=> speak(word.a), 900);
-    setTimeout(()=>{ locking=false; round.retry=false; round.idx++; nextQuestion(); }, 2600);
+    setTimeout(()=>{ locking=false; round.retry=false; round.idx++; nextQuestion(); }, 3000);
   } else {
     btn.classList.add("wrong");
     setTimeout(()=>btn.classList.add("dim"), 400);
     sfx.wrong();
+    
+    // 怪兽攻击超人动画
+    playBattleAnimation(false);
+    
     if(!round.retry){ srsAnswer(word.id, false); }
     round.retry = true; round.combo = 0;
     $("answerLine").innerHTML = `💪 再试一次！Try again!`;
