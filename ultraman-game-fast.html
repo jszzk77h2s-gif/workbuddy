@@ -187,6 +187,15 @@ body {
   .game-title{ font-size:40px; }
   .planet-grid{ grid-template-columns:repeat(4,1fr); width:min(740px,94vw); }
 }
+
+.bgm-btn {
+  position:fixed; bottom:80px; right:14px; width:44px; height:44px; border-radius:50%;
+  border:2px solid rgba(0,229,255,.4); background:rgba(10,10,40,.7); color:#00E5FF;
+  font-size:20px; cursor:pointer; z-index:20; backdrop-filter:blur(4px);
+  box-shadow:0 0 15px rgba(0,229,255,.2); transition:all .3s;
+}
+.bgm-btn.off { color:rgba(255,255,255,.3); border-color:rgba(255,255,255,.15); box-shadow:none; }
+.bgm-btn:active { transform:scale(.9); }
 </style>
 </head>
 <body>
@@ -196,37 +205,73 @@ body {
 <div id="screen-home" class="screen active">
   <div class="hero">
     <div class="ultra-hero" id="ultraHead">
-      <svg viewBox="0 0 160 180" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 180 200" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="bodyGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#0044CC"/><stop offset="40%" stop-color="#0066FF"/><stop offset="100%" stop-color="#003399"/>
+          </linearGradient>
+          <linearGradient id="redGrad" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stop-color="#E50012"/><stop offset="50%" stop-color="#FF3333"/><stop offset="100%" stop-color="#C8102E"/>
           </linearGradient>
           <linearGradient id="silverGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#FFFFFF"/><stop offset="100%" stop-color="#B0B8C8"/>
+            <stop offset="0%" stop-color="#FFFFFF"/><stop offset="100%" stop-color="#A0B0D0"/>
           </linearGradient>
-          <filter id="glow"><feGaussianBlur stdDeviation="2.5"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#FFE880"/><stop offset="100%" stop-color="#D4A017"/>
+          </linearGradient>
+          <filter id="glow"><feGaussianBlur stdDeviation="3"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
         </defs>
-        <ellipse cx="80" cy="50" rx="32" ry="36" fill="url(#silverGrad)" filter="url(#glow)"/>
-        <ellipse cx="67" cy="43" rx="11" ry="7" fill="#FFE800" opacity="0.95"/>
-        <ellipse cx="93" cy="43" rx="11" ry="7" fill="#FFE800" opacity="0.95"/>
-        <circle cx="67" cy="43" r="2.5" fill="#1a1a2e"/>
-        <circle cx="93" cy="43" r="2.5" fill="#1a1a2e"/>
-        <polygon points="80,12 72,32 88,32" fill="#E50012"/>
-        <rect x="50" y="82" width="60" height="68" rx="8" fill="url(#bodyGrad)"/>
-        <rect x="50" y="102" width="60" height="7" fill="url(#silverGrad)"/>
-        <circle cx="80" cy="112" r="9" fill="#00E5FF" opacity="0.85">
+        <!-- 头镖(赛罗标志性双头镖) -->
+        <polygon points="90,0 78,28 90,22" fill="url(#silverGrad)" filter="url(#glow)">
+          <animateTransform attributeName="transform" type="rotate" values="-5,90,14;5,90,14;-5,90,14" dur="2s" repeatCount="indefinite"/>
+        </polygon>
+        <polygon points="90,0 102,28 90,22" fill="url(#silverGrad)" filter="url(#glow)">
+          <animateTransform attributeName="transform" type="rotate" values="5,90,14;-5,90,14;5,90,14" dur="2s" repeatCount="indefinite"/>
+        </polygon>
+        <!-- 头部 -->
+        <ellipse cx="90" cy="52" rx="34" ry="38" fill="url(#silverGrad)" filter="url(#glow)"/>
+        <!-- 金色眼罩线 -->
+        <path d="M56,42 Q90,38 124,42" fill="none" stroke="url(#goldGrad)" stroke-width="3"/>
+        <!-- 赛罗眼睛(犀利斜角) -->
+        <polygon points="64,44 76,40 76,50 64,54" fill="#FFE800" opacity="0.95"/>
+        <polygon points="116,44 104,40 104,50 116,54" fill="#FFE800" opacity="0.95"/>
+        <circle cx="69" cy="46" r="2" fill="#1a1a2e"/>
+        <circle cx="111" cy="46" r="2" fill="#1a1a2e"/>
+        <!-- 额头光束灯 -->
+        <ellipse cx="90" cy="28" rx="5" ry="8" fill="#00FF88">
+          <animate attributeName="opacity" values="0.6;1;0.6" dur="1.2s" repeatCount="indefinite"/>
+        </ellipse>
+        <!-- 身体(蓝红配色) -->
+        <rect x="56" y="88" width="68" height="72" rx="10" fill="url(#bodyGrad)"/>
+        <!-- 红色胸甲 -->
+        <path d="M62,92 L90,88 L118,92 L118,130 Q90,140 62,130 Z" fill="url(#redGrad)" opacity="0.9"/>
+        <!-- 银色条纹 -->
+        <rect x="56" y="108" width="68" height="5" fill="url(#silverGrad)"/>
+        <!-- 彩色计时器 -->
+        <circle cx="90" cy="118" r="10" fill="#00E5FF" opacity="0.9">
           <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite"/>
         </circle>
-        <rect x="15" y="86" width="36" height="18" rx="9" fill="url(#bodyGrad)"/>
-        <rect x="109" y="86" width="36" height="18" rx="9" fill="url(#bodyGrad)"/>
-        <rect x="56" y="148" width="22" height="28" rx="5" fill="url(#bodyGrad)"/>
-        <rect x="82" y="148" width="22" height="28" rx="5" fill="url(#bodyGrad)"/>
-        <circle cx="51" cy="95" r="11" fill="url(#silverGrad)"/>
-        <circle cx="109" cy="95" r="11" fill="url(#silverGrad)"/>
+        <circle cx="90" cy="118" r="5" fill="#fff" opacity="0.4"/>
+        <!-- 左臂(银色护甲) -->
+        <rect x="18" y="92" width="38" height="20" rx="10" fill="url(#bodyGrad)"/>
+        <rect x="18" y="92" width="38" height="8" rx="4" fill="url(#silverGrad)"/>
+        <!-- 右臂 -->
+        <rect x="124" y="92" width="38" height="20" rx="10" fill="url(#bodyGrad)"/>
+        <rect x="124" y="92" width="38" height="8" rx="4" fill="url(#silverGrad)"/>
+        <!-- 左拳 -->
+        <circle cx="56" cy="102" r="12" fill="url(#silverGrad)"/>
+        <!-- 右拳 -->
+        <circle cx="124" cy="102" r="12" fill="url(#silverGrad)"/>
+        <!-- 腿部 -->
+        <rect x="62" y="158" width="24" height="32" rx="6" fill="url(#bodyGrad)"/>
+        <rect x="94" y="158" width="24" height="32" rx="6" fill="url(#bodyGrad)"/>
+        <!-- 腿部红色条纹 -->
+        <rect x="64" y="170" width="20" height="5" rx="2" fill="url(#redGrad)"/>
+        <rect x="96" y="170" width="20" height="5" rx="2" fill="url(#redGrad)"/>
       </svg>
     </div>
-    <h1 class="game-title">奥特曼<br><span>英语闯关大冒险</span></h1>
-    <p class="subtitle">⚡ Ultraman English Quest · Fast Load ⚡</p>
+    <h1 class="game-title">赛罗奥特曼<br><span>英语闯关大冒险</span></h1>
+    <p class="subtitle">⚡ Ultraman Zero English Quest · Fast Load ⚡</p>
   </div>
   <div class="home-stats">
     <div class="hs-item">⚡ 光之能量 <b id="homeEnergy">0</b></div>
@@ -267,29 +312,43 @@ body {
 <div id="screen-result" class="screen">
   <div class="result-card">
     <div class="ultra-hero small">
-      <svg viewBox="0 0 160 180" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 180 200" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="bodyGrad2" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#0044CC"/><stop offset="40%" stop-color="#0066FF"/><stop offset="100%" stop-color="#003399"/>
+          </linearGradient>
+          <linearGradient id="redGrad2" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stop-color="#E50012"/><stop offset="50%" stop-color="#FF3333"/><stop offset="100%" stop-color="#C8102E"/>
           </linearGradient>
           <linearGradient id="silverGrad2" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#FFFFFF"/><stop offset="100%" stop-color="#B0B8C8"/>
+            <stop offset="0%" stop-color="#FFFFFF"/><stop offset="100%" stop-color="#A0B0D0"/>
+          </linearGradient>
+          <linearGradient id="goldGrad2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#FFE880"/><stop offset="100%" stop-color="#D4A017"/>
           </linearGradient>
         </defs>
-        <ellipse cx="80" cy="50" rx="32" ry="36" fill="url(#silverGrad2)"/>
-        <ellipse cx="67" cy="43" rx="11" ry="7" fill="#FFE800" opacity="0.95"/>
-        <ellipse cx="93" cy="43" rx="11" ry="7" fill="#FFE800" opacity="0.95"/>
-        <circle cx="67" cy="43" r="2.5" fill="#1a1a2e"/><circle cx="93" cy="43" r="2.5" fill="#1a1a2e"/>
-        <polygon points="80,12 72,32 88,32" fill="#E50012"/>
-        <rect x="50" y="82" width="60" height="68" rx="8" fill="url(#bodyGrad2)"/>
-        <rect x="50" y="102" width="60" height="7" fill="url(#silverGrad2)"/>
-        <circle cx="80" cy="112" r="9" fill="#00E5FF" opacity="0.85"/>
-        <rect x="15" y="86" width="36" height="18" rx="9" fill="url(#bodyGrad2)"/>
-        <rect x="109" y="86" width="36" height="18" rx="9" fill="url(#bodyGrad2)"/>
-        <rect x="56" y="148" width="22" height="28" rx="5" fill="url(#bodyGrad2)"/>
-        <rect x="82" y="148" width="22" height="28" rx="5" fill="url(#bodyGrad2)"/>
-        <circle cx="51" cy="95" r="11" fill="url(#silverGrad2)"/>
-        <circle cx="109" cy="95" r="11" fill="url(#silverGrad2)"/>
+        <polygon points="90,0 78,28 90,22" fill="url(#silverGrad2)"/>
+        <polygon points="90,0 102,28 90,22" fill="url(#silverGrad2)"/>
+        <ellipse cx="90" cy="52" rx="34" ry="38" fill="url(#silverGrad2)"/>
+        <path d="M56,42 Q90,38 124,42" fill="none" stroke="url(#goldGrad2)" stroke-width="3"/>
+        <polygon points="64,44 76,40 76,50 64,54" fill="#FFE800" opacity="0.95"/>
+        <polygon points="116,44 104,40 104,50 116,54" fill="#FFE800" opacity="0.95"/>
+        <circle cx="69" cy="46" r="2" fill="#1a1a2e"/><circle cx="111" cy="46" r="2" fill="#1a1a2e"/>
+        <ellipse cx="90" cy="28" rx="5" ry="8" fill="#00FF88"/>
+        <rect x="56" y="88" width="68" height="72" rx="10" fill="url(#bodyGrad2)"/>
+        <path d="M62,92 L90,88 L118,92 L118,130 Q90,140 62,130 Z" fill="url(#redGrad2)" opacity="0.9"/>
+        <rect x="56" y="108" width="68" height="5" fill="url(#silverGrad2)"/>
+        <circle cx="90" cy="118" r="10" fill="#00E5FF" opacity="0.9"/>
+        <rect x="18" y="92" width="38" height="20" rx="10" fill="url(#bodyGrad2)"/>
+        <rect x="18" y="92" width="38" height="8" rx="4" fill="url(#silverGrad2)"/>
+        <rect x="124" y="92" width="38" height="20" rx="10" fill="url(#bodyGrad2)"/>
+        <rect x="124" y="92" width="38" height="8" rx="4" fill="url(#silverGrad2)"/>
+        <circle cx="56" cy="102" r="12" fill="url(#silverGrad2)"/>
+        <circle cx="124" cy="102" r="12" fill="url(#silverGrad2)"/>
+        <rect x="62" y="158" width="24" height="32" rx="6" fill="url(#bodyGrad2)"/>
+        <rect x="94" y="158" width="24" height="32" rx="6" fill="url(#bodyGrad2)"/>
+        <rect x="64" y="170" width="20" height="5" rx="2" fill="url(#redGrad2)"/>
+        <rect x="96" y="170" width="20" height="5" rx="2" fill="url(#redGrad2)"/>
       </svg>
     </div>
     <h2 id="resultTitle">胜利！</h2>
@@ -730,25 +789,134 @@ function dueReviewWords(){
       return (sb.wrong - sb.right) - (sa.wrong - sa.right) || sa.due - sb.due; });
 }
 
-/* ---------- 英音 TTS ---------- */
+/* ---------- 甜美女英音 TTS ---------- */
 let voiceGB = null;
 function pickVoice(){
   const vs = speechSynthesis.getVoices();
-  voiceGB = vs.find(v=>/en-GB/i.test(v.lang) && /female|hazel|susan|libby|sonia|kate/i.test(v.name))
-        || vs.find(v=>/en-GB/i.test(v.lang))
-        || vs.find(v=>/^en/i.test(v.lang)) || null;
+  // 优先搜索甜美女声：英国 > 美国 > 澳大利亚 > 爱尔兰 > 印度(英语)
+  const sweetNames = /serena|moira|fiona|veena|samantha|karen|daniel|alice|ava|emma|olivia|sophie|isabella|mia|charlotte|amelia|harper|evelyn|abigail|emily|elizabeth|sofia|avery|ella|scarlett|grace|chloe|victoria|riley|aria|lily|aurora|zoey|nora|camila|hannah|layla|stella|natalie|zoe|leah|hazel|violet|susan|libby|sonia|kate|amy|lucy|sarah|jessica|jennifer|lisa|michelle|sandra|linda|patricia|barbara|nancy|betty|carol/i;
+  // 英国甜美女声
+  voiceGB = vs.find(v=>/en-GB/i.test(v.lang) && sweetNames.test(v.name));
+  if(!voiceGB) voiceGB = vs.find(v=>/en-GB/i.test(v.lang) && /female/i.test(v.name));
+  // 美国甜美女声
+  if(!voiceGB) voiceGB = vs.find(v=>/en-US/i.test(v.lang) && sweetNames.test(v.name));
+  if(!voiceGB) voiceGB = vs.find(v=>/en-US/i.test(v.lang) && /female/i.test(v.name));
+  // 澳大利亚/其他英语
+  if(!voiceGB) voiceGB = vs.find(v=>/en-(AU|IE|IN)/i.test(v.lang) && /female/i.test(v.name));
+  // 任意英语女声
+  if(!voiceGB) voiceGB = vs.find(v=>/^en/i.test(v.lang) && /female/i.test(v.name));
+  // 兜底
+  if(!voiceGB) voiceGB = vs.find(v=>/^en/i.test(v.lang)) || null;
 }
 if ("speechSynthesis" in window){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
-function speak(text, rate=0.85){
+function speak(text, rate=0.82){
   if(!("speechSynthesis" in window)) return;
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
   u.lang = "en-GB"; if(voiceGB) u.voice = voiceGB;
-  u.rate = rate; u.pitch = 1.05; u.volume = 1;
+  u.rate = rate; u.pitch = 1.15; u.volume = 1;
   speechSynthesis.speak(u);
 }
 
-/* ---------- 音效合成 ---------- */
+/* ---------- 奥特曼经典BGM (Web Audio合成) ---------- */
+// 基于「ウルトラマンの歌」旋律改编
+let bgmPlaying = false, bgmGain = null, bgmNodes = [];
+const BGM_MELODY = [
+  // 前奏 "ジャーン！" (E♭调)
+  [0, [523,659,784], 0.15],
+  [0.5, [784,988,1175], 0.2],
+  [1.0, [1047], 0.4],
+  // 主旋律 "ぼくらのウルトラマン"
+  [1.6, [784,784,659,523,659,784], 0.18],
+  [2.8, [1047,988,784,659,523], 0.2],
+  [4.0, [784,784,659,523,659,784], 0.18],
+  [5.2, [1047,1175,1319,1175,1047,988], 0.18],
+  // 副歌 "ウルトラマン！"
+  [6.6, [784,988,784,659], 0.2],
+  [7.6, [523,659,784,988], 0.2],
+  [8.6, [1047,1175,1319,1568], 0.15],
+  [9.4, [1568], 0.5],
+  // 循环段
+  [10.2, [1175,1047,988,784,659,523], 0.2],
+  [11.5, [659,784,988,1047], 0.22],
+  [12.5, [1175,1047,988,784], 0.2],
+  [13.5, [659,784,1047,1319], 0.22],
+  [14.5, [1568,1319,1047,784], 0.25],
+  [15.5, [1047], 0.6],
+];
+
+function startBGM() {
+  if(bgmPlaying) return;
+  bgmPlaying = true;
+  const ctx = ac();
+  bgmGain = ctx.createGain();
+  bgmGain.gain.value = 0.06;
+  bgmGain.connect(ctx.destination);
+  playBGMLoop();
+}
+
+function playBGMLoop() {
+  if(!bgmPlaying) return;
+  const ctx = ac();
+  const now = ctx.currentTime;
+  
+  BGM_MELODY.forEach(([start, notes, dur]) => {
+    notes.forEach((freq, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = i === 0 ? 'square' : 'triangle';
+      o.frequency.value = freq;
+      const t = now + start + i * dur;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.15, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      o.connect(g).connect(bgmGain);
+      o.start(t); o.stop(t + dur + 0.05);
+      bgmNodes.push(o);
+    });
+  });
+  
+  // 打击乐
+  for(let beat = 0; beat < 16; beat++) {
+    const t = now + beat * 0.5;
+    const b = ctx.createOscillator();
+    const bg = ctx.createGain();
+    b.type = 'triangle';
+    b.frequency.value = 80 + (beat % 4 === 0 ? 40 : 0);
+    bg.gain.setValueAtTime(0.08, t);
+    bg.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+    b.connect(bg).connect(bgmGain);
+    b.start(t); b.stop(t + 0.12);
+    bgmNodes.push(b);
+  }
+  
+  // 循环 (约16秒后)
+  bgmNodes.push(setTimeout(() => {
+    if(bgmPlaying) playBGMLoop();
+  }, 15800));
+}
+
+function stopBGM() {
+  bgmPlaying = false;
+  bgmNodes.forEach(n => { try { if(typeof n === 'number') clearTimeout(n); } catch(e){} });
+  bgmNodes = [];
+  if(bgmGain) {
+    bgmGain.gain.linearRampToValueAtTime(0, ac().currentTime + 0.3);
+    setTimeout(() => { try { bgmGain.disconnect(); } catch(e){} }, 400);
+  }
+}
+
+function toggleBGM() {
+  if(bgmPlaying) { stopBGM(); return false; }
+  else { startBGM(); return true; }
+}
+
+// 页面首次交互时自动启动BGM
+let bgmStarted = false;
+document.addEventListener('click', () => { if(!bgmStarted) { bgmStarted = true; startBGM(); } }, {once: true});
+document.addEventListener('touchstart', () => { if(!bgmStarted) { bgmStarted = true; startBGM(); } }, {once: true});
+
+/* ---------- 游戏音效合成 ---------- */
 let AC = null;
 function ac(){ if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==="suspended") AC.resume(); return AC; }
 function tone(freq, t0, dur, type="sine", vol=0.25){
@@ -771,12 +939,20 @@ const sfx = {
 
 /* ---------- 星空背景 ---------- */
 (function makeStars(){
-  const box = $("stars"), colors = ['w','w','w','b','b','g','g','r'];
-  for(let i=0;i<80;i++){
+  const box = $("stars"), colors = ['w','w','w','b','b','b','g','g','r','p','p'];
+  for(let i=0;i<100;i++){
     const s = document.createElement("div"); s.className="star "+colors[Math.floor(Math.random()*colors.length)];
-    const sz = Math.random()*2.8+1;
-    s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*2.6}s`;
+    const sz = Math.random()*3.5+1;
+    s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*3}s`;
     box.appendChild(s);
+  }
+  // 赛罗风格光粒子(大颗光点)
+  for(let i=0;i<15;i++){
+    const p = document.createElement("div");
+    p.className = "star g";
+    const sz = Math.random()*5+3;
+    p.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*4}s;animation-duration:${3+Math.random()*3}s;filter:blur(1px)`;
+    box.appendChild(p);
   }
 })();
 
@@ -945,7 +1121,7 @@ function choose(btn, opt, word){
     if(round.combo>=2 && !round.retry){
       sfx.combo();
       const tip = $("comboTip");
-      tip.textContent = `⚡ 连击 x${round.combo}！斯佩修姆光线！`;
+      tip.textContent = `⚡ 连击 x${round.combo}！赛罗双重射线！`;
       tip.classList.add("show");
       if(round.combo>=3){ $("beamFx").classList.add("on"); sfx.beam();
         setTimeout(()=>$("beamFx").classList.remove("on"), 600); }
@@ -1002,7 +1178,18 @@ $("btnReview").onclick = ()=>{ ac(); sfx.tap(); startRound("__review__"); };
 $("btnBackHome").onclick = ()=>{ sfx.tap(); refreshHome(); show("screen-home"); };
 $("btnQuit").onclick = ()=>{ speechSynthesis.cancel(); refreshHome(); show("screen-home"); };
 $("btnNext").onclick = ()=>{ sfx.tap(); renderPlanets(); show("screen-planets"); };
+
 $("btnResultHome").onclick = ()=>{ sfx.tap(); refreshHome(); show("screen-home"); };
+
+// BGM开关
+$("bgmToggle").onclick = (e) => {
+  e.stopPropagation();
+  const on = toggleBGM();
+  $("bgmToggle").textContent = on ? "🎵" : "🔇";
+  $("bgmToggle").classList.toggle("off", !on);
+};
 </script>
+
+<button class="bgm-btn" id="bgmToggle" title="BGM开关">🎵</button>
 </body>
 </html>
